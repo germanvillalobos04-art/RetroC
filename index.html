@@ -55,18 +55,18 @@
 <body>
   <button id="fs-btn" onclick="toggleFullScreen()">⛶ Pantalla Completa</button>
 
-  <div id="msg">Cargando cartucho...</div>
+  <div id="msg">Iniciando cartucho...</div>
   <div id="display"></div>
 
   <script>
-    // LISTA DE TUS 6 CARTUCHOS
+    // APUNTANDO A LA CARPETA roms/
     const GAMES = {
-      "doom": { title: "DOOM", rom: "doom.sfc", system: "snes" },
-      "mk2":  { title: "Mortal Kombat II", rom: "mk2.sfc", system: "snes" },
-      "dkc1": { title: "Donkey Kong Country", rom: "dkc1.sfc", system: "snes" },
-      "dkc2": { title: "Donkey Kong Country 2", rom: "dkc2.sfc", system: "snes" },
-      "dkc3": { title: "Donkey Kong Country 3", rom: "dkc3.sfc", system: "snes" },
-      "ki":   { title: "Killer Instinct", rom: "ki.sfc", system: "snes" }
+      "doom": { title: "DOOM", rom: "roms/doom.sfc", system: "snes" },
+      "mk2":  { title: "Mortal Kombat II", rom: "roms/mk2.sfc", system: "snes" },
+      "dkc1": { title: "Donkey Kong Country", rom: "roms/dkc1.sfc", system: "snes" },
+      "dkc2": { title: "Donkey Kong Country 2", rom: "roms/dkc2.sfc", system: "snes" },
+      "dkc3": { title: "Donkey Kong Country 3", rom: "roms/dkc3.sfc", system: "snes" },
+      "ki":   { title: "Killer Instinct", rom: "roms/ki.sfc", system: "snes" }
     };
 
     const params = new URLSearchParams(window.location.search);
