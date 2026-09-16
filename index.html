@@ -19,6 +19,7 @@
       position: absolute;
       top: 0;
       left: 0;
+      z-index: 1;
     }
     #msg {
       color: #fff;
@@ -32,18 +33,18 @@
       padding: 20px;
     }
 
-    /* --- MARCA DE AGUA FLOTANTE --- */
+    /* --- MARCA DE AGUA (LOGO) --- */
     #watermark {
       position: fixed;
-      top: 14px;
-      left: 14px;
-      z-index: 999999;
-      opacity: 0.3; /* 30% de opacidad */
+      top: 15px;
+      left: 15px;
+      z-index: 9999999;
+      opacity: 0.30; /* 30% de opacidad */
       max-width: 90px;
-      height: auto;
-      pointer-events: none; /* No estorba al pulsar la pantalla */
+      max-height: 50px;
+      object-fit: contain;
+      pointer-events: none; /* No bloquea toques de dedos */
       user-select: none;
-      -webkit-user-drag: none;
     }
 
     /* --- BOTÓN PANTALLA COMPLETA --- */
@@ -51,7 +52,7 @@
       position: fixed;
       top: 12px;
       right: 12px;
-      z-index: 999999;
+      z-index: 9999999;
       background: rgba(20, 20, 20, 0.85);
       color: #fff;
       border: 1px solid rgba(255, 255, 255, 0.3);
@@ -63,65 +64,11 @@
       backdrop-filter: blur(4px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     }
-    #fs-btn:active {
-      background: #ff4757;
-    }
-
-    /* --- ESTILOS CONTROL SNES (COLORES OFICIALES) --- */
-    /* Botón B (Abajo): Amarillo */
-    .ejs--virtual-gamepad-button-b,
-    [data-button="b"],
-    [data-key="b"] {
-      background: rgba(255, 183, 3, 0.82) !important;
-      border: 2px solid #ffa200 !important;
-      color: #000 !important;
-      font-weight: bold !important;
-    }
-
-    /* Botón A (Derecha): Rojo */
-    .ejs--virtual-gamepad-button-a,
-    [data-button="a"],
-    [data-key="a"] {
-      background: rgba(230, 57, 70, 0.82) !important;
-      border: 2px solid #b71c1c !important;
-      color: #fff !important;
-      font-weight: bold !important;
-    }
-
-    /* Botón Y (Izquierda): Verde */
-    .ejs--virtual-gamepad-button-y,
-    [data-button="y"],
-    [data-key="y"] {
-      background: rgba(42, 157, 143, 0.82) !important;
-      border: 2px solid #1f6f65 !important;
-      color: #fff !important;
-      font-weight: bold !important;
-    }
-
-    /* Botón X (Arriba): Azul */
-    .ejs--virtual-gamepad-button-x,
-    [data-button="x"],
-    [data-key="x"] {
-      background: rgba(69, 123, 157, 0.82) !important;
-      border: 2px solid #1d4e6d !important;
-      color: #fff !important;
-      font-weight: bold !important;
-    }
-
-    /* Gatillos L y R: Gris SNES */
-    .ejs--virtual-gamepad-button-l,
-    .ejs--virtual-gamepad-button-r,
-    [data-button="l"],
-    [data-button="r"] {
-      background: rgba(140, 140, 150, 0.75) !important;
-      border: 1px solid #ffffff66 !important;
-      color: #fff !important;
-    }
   </style>
 </head>
 <body>
-  <!-- Marca de agua (logo.png debe estar en tu repositorio) -->
-  <img id="watermark" src="./logo.png" alt="Logo" onerror="this.style.display='none'">
+  <!-- Marca de agua -->
+  <img id="watermark" src="./logo.png" alt="Logo">
 
   <button id="fs-btn" onclick="toggleFullScreen()">⛶ Pantalla Completa</button>
 
@@ -149,6 +96,42 @@
       window.EJS_gameName = selected.title;
       window.EJS_startOnLoaded = true;
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+
+      // Script para aplicar los colores oficiales de SNES a los botones
+      function colorizeGamepad() {
+        const elements = document.querySelectorAll('*');
+        elements.forEach(el => {
+          const txt = (el.innerText || el.textContent || "").trim();
+          // Solo coloreamos si el elemento es un botón individual
+          if (el.children.length === 0) {
+            if (txt === 'B') {
+              el.style.setProperty('background', 'rgba(244, 180, 0, 0.85)', 'important'); // Amarillo SNES
+              el.style.setProperty('border', '2px solid #b28300', 'important');
+              el.style.setProperty('color', '#000', 'important');
+              el.style.setProperty('font-weight', 'bold', 'important');
+            } else if (txt === 'A') {
+              el.style.setProperty('background', 'rgba(219, 68, 55, 0.85)', 'important');  // Rojo SNES
+              el.style.setProperty('border', '2px solid #9e1c11', 'important');
+              el.style.setProperty('color', '#fff', 'important');
+              el.style.setProperty('font-weight', 'bold', 'important');
+            } else if (txt === 'Y') {
+              el.style.setProperty('background', 'rgba(15, 157, 88, 0.85)', 'important');  // Verde SNES
+              el.style.setProperty('border', '2px solid #0b6b3c', 'important');
+              el.style.setProperty('color', '#fff', 'important');
+              el.style.setProperty('font-weight', 'bold', 'important');
+            } else if (txt === 'X') {
+              el.style.setProperty('background', 'rgba(66, 133, 244, 0.85)', 'important'); // Azul SNES
+              el.style.setProperty('border', '2px solid #1a56b8', 'important');
+              el.style.setProperty('color', '#fff', 'important');
+              el.style.setProperty('font-weight', 'bold', 'important');
+            }
+          }
+        });
+      }
+
+      // Revisa periódicamente mientras carga el juego hasta pintar los botones
+      const colorTimer = setInterval(colorizeGamepad, 600);
+      setTimeout(() => clearInterval(colorTimer), 25000); // Se detiene a los 25s
 
       const s = document.createElement('script');
       s.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
