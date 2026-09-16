@@ -17,7 +17,6 @@
     /* --- CONTENEDOR DEL EMULADOR --- */
     #display {
       width: 100vw;
-      /* Reducimos el borde a solo 45px */
       height: calc(100dvh - 45px); 
       position: absolute;
       top: 45px; 
@@ -43,9 +42,9 @@
       top: 8px;
       left: 12px;
       z-index: 9999999;
-      opacity: 1.0; /* Opacidad al 100% */
+      opacity: 1.0; 
       max-width: 120px; 
-      max-height: 28px; /* Ajustado al nuevo borde más pequeño */
+      max-height: 28px; 
       object-fit: contain;
       pointer-events: none; 
       user-select: none;
@@ -55,7 +54,7 @@
     #fs-btn {
       position: fixed;
       top: 8px; 
-      right: 12px; /* De vuelta a su posición original a la derecha */
+      right: 12px; 
       z-index: 9999999;
       background: rgba(20, 20, 20, 0.85);
       color: #fff;
@@ -71,10 +70,7 @@
   </style>
 </head>
 <body>
-  <!-- Marca de agua -->
   <img id="watermark" src="./logo.png" alt="Logo">
-
-  <!-- Botón Pantalla Completa -->
   <button id="fs-btn" onclick="toggleFullScreen()">⛶ Pantalla Completa</button>
 
   <div id="msg">Iniciando cartucho...</div>
@@ -107,27 +103,56 @@
         elements.forEach(el => {
           const cls = (el.className || '').toString().toLowerCase();
           const elemId = (el.id || '').toString().toLowerCase();
-          const txt = (el.innerText || '').trim();
+          // Convertimos a mayúscula para asegurar la coincidencia
+          const txt = (el.innerText || '').trim().toUpperCase();
 
+          // Botón A (Rojo, Letra Blanca)
           if (cls.includes('button-a') || elemId.includes('button-a') || txt === 'A') {
             el.style.setProperty('background', 'rgba(219, 68, 55, 0.85)', 'important');
             el.style.setProperty('border', '2px solid #9e1c11', 'important');
-            el.style.setProperty('color', '#fff', 'important');
+            el.style.setProperty('color', '#ffffff', 'important');
           }
+          // Botón B (Amarillo, Letra Blanca)
           else if (cls.includes('button-b') || elemId.includes('button-b') || txt === 'B') {
             el.style.setProperty('background', 'rgba(244, 180, 0, 0.85)', 'important');
             el.style.setProperty('border', '2px solid #b28300', 'important');
-            el.style.setProperty('color', '#000', 'important');
+            el.style.setProperty('color', '#ffffff', 'important');
           }
+          // Botón X (Azul, Letra Blanca)
           else if (cls.includes('button-x') || elemId.includes('button-x') || txt === 'X') {
             el.style.setProperty('background', 'rgba(66, 133, 244, 0.85)', 'important');
             el.style.setProperty('border', '2px solid #1a56b8', 'important');
-            el.style.setProperty('color', '#fff', 'important');
+            el.style.setProperty('color', '#ffffff', 'important');
           }
+          // Botón Y (Verde, Letra Blanca)
           else if (cls.includes('button-y') || elemId.includes('button-y') || txt === 'Y') {
             el.style.setProperty('background', 'rgba(15, 157, 88, 0.85)', 'important');
             el.style.setProperty('border', '2px solid #0b6b3c', 'important');
-            el.style.setProperty('color', '#fff', 'important');
+            el.style.setProperty('color', '#ffffff', 'important');
+          }
+          // Botón START (Negro, Letra Blanca)
+          else if (cls.includes('button-start') || elemId.includes('button-start') || txt === 'START') {
+            el.style.setProperty('background', 'rgba(25, 25, 25, 0.95)', 'important');
+            el.style.setProperty('border', '2px solid #000000', 'important');
+            el.style.setProperty('color', '#ffffff', 'important');
+          }
+          // Botón SELECT (Negro, Letra Blanca)
+          else if (cls.includes('button-select') || elemId.includes('button-select') || txt === 'SELECT') {
+            el.style.setProperty('background', 'rgba(25, 25, 25, 0.95)', 'important');
+            el.style.setProperty('border', '2px solid #000000', 'important');
+            el.style.setProperty('color', '#ffffff', 'important');
+          }
+          // Botón L y R (Gris SNES)
+          else if (cls.includes('button-l') || elemId.includes('button-l') || txt === 'L' || txt === 'L1' || 
+                   cls.includes('button-r') || elemId.includes('button-r') || txt === 'R' || txt === 'R1') {
+            el.style.setProperty('background', 'rgba(181, 182, 181, 0.9)', 'important');
+            el.style.setProperty('border', '2px solid #8e8e8e', 'important');
+            el.style.setProperty('color', '#222222', 'important');
+          }
+          // D-Pad / Cruceta (Gris SNES)
+          else if (cls.includes('dpad') || elemId.includes('dpad') || cls.includes('joystick') || cls.includes('direction')) {
+            el.style.setProperty('background', 'rgba(181, 182, 181, 0.8)', 'important');
+            el.style.setProperty('border-color', '#8e8e8e', 'important');
           }
         });
       });
