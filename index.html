@@ -17,10 +17,10 @@
     /* --- CONTENEDOR DEL EMULADOR --- */
     #display {
       width: 100vw;
-      /* Restamos 70px al total para hacerle espacio a tu logo y botón arriba */
-      height: calc(100dvh - 70px); 
+      /* Reducimos el borde a solo 45px */
+      height: calc(100dvh - 45px); 
       position: absolute;
-      top: 70px; /* Bajamos el emulador completo 70 píxeles */
+      top: 45px; 
       left: 0;
       z-index: 1;
     }
@@ -40,12 +40,12 @@
     /* --- MARCA DE AGUA (LOGO) --- */
     #watermark {
       position: fixed;
-      top: 10px;
-      left: 15px;
+      top: 8px;
+      left: 12px;
       z-index: 9999999;
-      opacity: 0.50; 
-      max-width: 140px; 
-      max-height: 55px;
+      opacity: 1.0; /* Opacidad al 100% */
+      max-width: 120px; 
+      max-height: 28px; /* Ajustado al nuevo borde más pequeño */
       object-fit: contain;
       pointer-events: none; 
       user-select: none;
@@ -54,14 +54,14 @@
     /* --- BOTÓN PANTALLA COMPLETA --- */
     #fs-btn {
       position: fixed;
-      top: 20px; /* Alineado con el logo */
-      right: 70px; /* Movido a la izquierda para no estorbar en la esquina */
+      top: 8px; 
+      right: 12px; /* De vuelta a su posición original a la derecha */
       z-index: 9999999;
       background: rgba(20, 20, 20, 0.85);
       color: #fff;
       border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 20px;
-      padding: 8px 14px;
+      padding: 6px 12px;
       font-size: 13px;
       font-weight: bold;
       cursor: pointer;
