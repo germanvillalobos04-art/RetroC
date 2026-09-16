@@ -43,19 +43,24 @@
       left: 12px;
       z-index: 9999999;
       opacity: 1.0; 
-      max-width: 180px;  
+      max-width: 150px;  
       max-height: 36px;  
       object-fit: contain;
       pointer-events: none; 
       user-select: none;
     }
 
-    /* --- BOTÓN PANTALLA COMPLETA --- */
-    #fs-btn {
+    /* --- CONTROLES SUPERIORES (GUARDAR, CARGAR, PANTALLA COMPLETA) --- */
+    #top-controls {
       position: fixed;
       top: 8px; 
       right: 12px; 
       z-index: 9999999;
+      display: flex;
+      gap: 6px;
+    }
+
+    #top-controls button {
       background: rgba(20, 20, 20, 0.85);
       color: #fff;
       border: 1px solid rgba(255, 255, 255, 0.3);
@@ -67,11 +72,20 @@
       backdrop-filter: blur(4px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     }
+
+    #top-controls button:active {
+      background: rgba(100, 100, 100, 0.85);
+    }
   </style>
 </head>
 <body>
   <img id="watermark" src="./logo.png" alt="Logo">
-  <button id="fs-btn" onclick="toggleFullScreen()">⛶ Pantalla Completa</button>
+  
+  <div id="top-controls">
+    <button onclick="quickSave()">💾 Guardar</button>
+    <button onclick="quickLoad()">📂 Cargar</button>
+    <button onclick="toggleFullScreen()" id="fs-btn">⛶ Pantalla</button>
+  </div>
 
   <div id="msg">Iniciando cartucho...</div>
   <div id="display"></div>
@@ -89,6 +103,71 @@
     const params = new URLSearchParams(window.location.search);
     const id = params.get("game") || "doom";
 
+    // --- BASE DE DATOS LOCAL PARA GUARDAR PARTIDAS ---
+    let savesDB;
+    const dbRequest = indexedDB.open("RetroC_SavesDB", 1);
+    dbRequest.onupgradeneeded = function(e) {
+      savesDB = e.target.result;
+      if (!savesDB.objectStoreNames.contains("states")) {
+        savesDB.createObjectStore("states");
+      }
+    };
+    dbRequest.onsuccess = function(e) {
+      savesDB = e.target.result;
+    };
+
+    async function quickSave() {
+      if (window.EJS_emulator && window.EJS_emulator.gameManager) {
+        try {
+          const state = await window.EJS_emulator.gameManager.getState();
+          if (state && savesDB) {
+            const tx = savesDB.transaction("states", "readwrite");
+            tx.objectStore("states").put(state, id); // Se guarda con el ID del juego (ej. "doom")
+            showToast("💾 Partida Guardada");
+            if (navigator.vibrate) navigator.vibrate(30);
+          }
+        } catch (e) {
+          console.error(e);
+          showToast("❌ Error al guardar");
+        }
+      } else {
+        showToast("⏳ Espera a que cargue el juego");
+      }
+    }
+
+    async function quickLoad() {
+      if (window.EJS_emulator && window.EJS_emulator.gameManager && savesDB) {
+        try {
+          const tx = savesDB.transaction("states", "readonly");
+          const req = tx.objectStore("states").get(id);
+          req.onsuccess = async function(e) {
+            const state = e.target.result;
+            if (state) {
+              await window.EJS_emulator.gameManager.loadState(state);
+              showToast("📂 Partida Cargada");
+              if (navigator.vibrate) navigator.vibrate(30);
+            } else {
+              showToast("❌ No hay partida guardada");
+            }
+          };
+        } catch (e) {
+          console.error(e);
+          showToast("❌ Error al cargar");
+        }
+      } else {
+        showToast("⏳ Espera a que cargue el juego");
+      }
+    }
+
+    function showToast(text) {
+      let t = document.createElement('div');
+      t.innerText = text;
+      t.style.cssText = "position:fixed; top:60px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:#fff; padding:10px 22px; border-radius:20px; z-index:9999999; font-weight:bold; font-size:14px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2);";
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2000);
+    }
+
+    // --- CARGA DEL JUEGO ---
     if (GAMES[id]) {
       const selected = GAMES[id];
       window.EJS_player = '#display';
@@ -104,21 +183,17 @@
         while (target && target !== document.body) {
           const cls = (target.className || '').toString().toLowerCase();
           const elemId = (target.id || '').toString().toLowerCase();
-          
           if (cls.includes('button') || cls.includes('dpad') || cls.includes('direction') || 
               cls.includes('up') || cls.includes('down') || cls.includes('left') || cls.includes('right') ||
               elemId.includes('button') || elemId.includes('dpad')) {
-            
-            if (navigator.vibrate) {
-              navigator.vibrate(15);
-            }
+            if (navigator.vibrate) navigator.vibrate(15);
             break;
           }
           target = target.parentNode;
         }
       }, { passive: true });
 
-      // --- ESTILIZADO DE BOTONES ---
+      // --- ESTILIZADO DE BOTONES A, B, X, Y, L, R ---
       function styleBtn(el, bg, border, textColor = '#ffffff') {
         el.style.setProperty('background', bg, 'important');
         el.style.setProperty('border', border, 'important');
@@ -138,7 +213,6 @@
           const elemId = (el.id || '').toString().toLowerCase();
           const txt = (el.innerText || el.textContent || '').trim().toUpperCase();
 
-          // Botones A, B, X, Y
           if (cls.includes('button-a') || elemId.includes('button-a') || txt === 'A') {
             styleBtn(el, 'rgba(230, 57, 70, 0.88)', '2px solid #9e1c11', '#ffffff');
           } else if (cls.includes('button-b') || elemId.includes('button-b') || txt === 'B') {
@@ -147,12 +221,8 @@
             styleBtn(el, 'rgba(29, 112, 184, 0.88)', '2px solid #144b7d', '#ffffff');
           } else if (cls.includes('button-y') || elemId.includes('button-y') || txt === 'Y') {
             styleBtn(el, 'rgba(42, 157, 143, 0.88)', '2px solid #1c6b60', '#ffffff');
-          } 
-          // Gatillos L y R (Corregido para que NO atrape a "left" ni "right")
-          else if ( 
-            (cls.includes('button-l') && !cls.includes('left')) || txt === 'L' || txt === 'L1' ||
-            (cls.includes('button-r') && !cls.includes('right')) || txt === 'R' || txt === 'R1'
-          ) {
+          } else if ( (cls.includes('button-l') && !cls.includes('left')) || txt === 'L' || txt === 'L1' ||
+                      (cls.includes('button-r') && !cls.includes('right')) || txt === 'R' || txt === 'R1' ) {
             styleBtn(el, 'rgba(153, 153, 161, 0.85)', '2px solid #777780', '#ffffff');
           }
         });
@@ -175,20 +245,21 @@
 
     function toggleFullScreen() {
       const elem = document.documentElement;
+      const btn = document.getElementById('fs-btn');
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         if (elem.requestFullscreen) {
           elem.requestFullscreen();
         } else if (elem.webkitRequestFullscreen) {
           elem.webkitRequestFullscreen();
         }
-        document.getElementById('fs-btn').innerText = '✕ Salir';
+        btn.innerText = '✕ Salir';
       } else {
         if (document.exitFullscreen) {
           document.exitFullscreen();
         } else if (document.webkitExitFullscreen) {
           document.webkitExitFullscreen();
         }
-        document.getElementById('fs-btn').innerText = '⛶ Pantalla Completa';
+        btn.innerText = '⛶ Pantalla';
       }
     }
   </script>
