@@ -148,9 +148,11 @@
           } else if (cls.includes('button-y') || elemId.includes('button-y') || txt === 'Y') {
             styleBtn(el, 'rgba(42, 157, 143, 0.88)', '2px solid #1c6b60', '#ffffff');
           } 
-          // Gatillos L y R
-          else if (cls.includes('button-l') || elemId.includes('button-l') || txt === 'L' || txt === 'L1' ||
-                   cls.includes('button-r') || elemId.includes('button-r') || txt === 'R' || txt === 'R1') {
+          // Gatillos L y R (Corregido para que NO atrape a "left" ni "right")
+          else if ( 
+            (cls.includes('button-l') && !cls.includes('left')) || txt === 'L' || txt === 'L1' ||
+            (cls.includes('button-r') && !cls.includes('right')) || txt === 'R' || txt === 'R1'
+          ) {
             styleBtn(el, 'rgba(153, 153, 161, 0.85)', '2px solid #777780', '#ffffff');
           }
         });
