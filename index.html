@@ -101,7 +101,6 @@
       // --- RESPUESTA HÁPTICA (VIBRACIÓN TÁCTIL) ---
       document.addEventListener('touchstart', function(e) {
         let target = e.target;
-        // Recorremos los elementos tocados para ver si es un botón o parte de la cruceta
         while (target && target !== document.body) {
           const cls = (target.className || '').toString().toLowerCase();
           const elemId = (target.id || '').toString().toLowerCase();
@@ -110,7 +109,6 @@
               cls.includes('up') || cls.includes('down') || cls.includes('left') || cls.includes('right') ||
               elemId.includes('button') || elemId.includes('dpad')) {
             
-            // Dispara un pulso de vibración corto y seco de 15 milisegundos
             if (navigator.vibrate) {
               navigator.vibrate(15);
             }
@@ -154,32 +152,6 @@
           else if (cls.includes('button-l') || elemId.includes('button-l') || txt === 'L' || txt === 'L1' ||
                    cls.includes('button-r') || elemId.includes('button-r') || txt === 'R' || txt === 'R1') {
             styleBtn(el, 'rgba(153, 153, 161, 0.85)', '2px solid #777780', '#ffffff');
-          } 
-          // Procesamiento de la Cruceta / D-Pad
-          else {
-            const hasDir = ['up', 'down', 'left', 'right'].some(dir => cls.includes(dir) || elemId.includes(dir));
-            const isDpadContainer = (cls.includes('dpad') || elemId.includes('dpad') || cls.includes('joystick')) && !hasDir;
-
-            if (isDpadContainer) {
-              const svgCross = "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='32' y='0' width='36' height='100' rx='8' fill='%23585858' /%3E%3Crect x='0' y='32' width='100' height='36' rx='8' fill='%23585858' /%3E%3Cpolygon points='50,8 38,22 62,22' fill='%23222222' /%3E%3Cpolygon points='50,92 38,78 62,78' fill='%23222222' /%3E%3Cpolygon points='8,50 22,38 22,62' fill='%23222222' /%3E%3Cpolygon points='92,50 78,38 78,62' fill='%23222222' /%3E%3C/svg%3E\")";
-              el.style.setProperty('background-image', svgCross, 'important');
-              el.style.setProperty('background-size', '100% 100%', 'important');
-              el.style.setProperty('background-repeat', 'no-repeat', 'important');
-              el.style.setProperty('background-position', 'center', 'important');
-              el.style.setProperty('background-color', 'transparent', 'important');
-              el.style.setProperty('border', 'none', 'important');
-              el.style.setProperty('box-shadow', 'none', 'important');
-              
-              const innerGraphics = el.querySelectorAll('svg, path, polygon, span');
-              innerGraphics.forEach(child => {
-                child.style.setProperty('opacity', '0', 'important');
-              });
-            } 
-            else if (hasDir) {
-              el.style.setProperty('background', 'transparent', 'important');
-              el.style.setProperty('border', 'none', 'important');
-              el.style.setProperty('box-shadow', 'none', 'important');
-            }
           }
         });
       });
