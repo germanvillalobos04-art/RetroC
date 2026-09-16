@@ -13,14 +13,18 @@
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
+    
+    /* --- CONTENEDOR DEL EMULADOR --- */
     #display {
       width: 100vw;
-      height: 100dvh;
+      /* Restamos 70px al total para hacerle espacio a tu logo y botón arriba */
+      height: calc(100dvh - 70px); 
       position: absolute;
-      top: 0;
+      top: 70px; /* Bajamos el emulador completo 70 píxeles */
       left: 0;
       z-index: 1;
     }
+    
     #msg {
       color: #fff;
       display: flex;
@@ -33,25 +37,25 @@
       padding: 20px;
     }
 
-    /* --- MARCA DE AGUA (LOGO MODIFICADO) --- */
+    /* --- MARCA DE AGUA (LOGO) --- */
     #watermark {
       position: fixed;
-      top: 15px;
+      top: 10px;
       left: 15px;
       z-index: 9999999;
-      opacity: 0.50; /* Opacidad subida al 50% */
-      max-width: 140px; /* Tamaño más grande (antes era 90px) */
-      max-height: 80px;
+      opacity: 0.50; 
+      max-width: 140px; 
+      max-height: 55px;
       object-fit: contain;
-      pointer-events: none; /* No bloquea los toques de los dedos */
+      pointer-events: none; 
       user-select: none;
     }
 
     /* --- BOTÓN PANTALLA COMPLETA --- */
     #fs-btn {
       position: fixed;
-      top: 12px;
-      right: 12px;
+      top: 20px; /* Alineado con el logo */
+      right: 70px; /* Movido a la izquierda para no estorbar en la esquina */
       z-index: 9999999;
       background: rgba(20, 20, 20, 0.85);
       color: #fff;
@@ -98,8 +102,6 @@
       window.EJS_startOnLoaded = true;
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
 
-      // --- OBSERVADOR AGRESIVO PARA COLOREAR CONTROLES ---
-      // Esto vigila constantemente la pantalla y colorea los botones apenas aparecen
       const observer = new MutationObserver(() => {
         const elements = document.querySelectorAll('div, button');
         elements.forEach(el => {
@@ -107,25 +109,21 @@
           const elemId = (el.id || '').toString().toLowerCase();
           const txt = (el.innerText || '').trim();
 
-          // Botón A (Rojo)
           if (cls.includes('button-a') || elemId.includes('button-a') || txt === 'A') {
             el.style.setProperty('background', 'rgba(219, 68, 55, 0.85)', 'important');
             el.style.setProperty('border', '2px solid #9e1c11', 'important');
             el.style.setProperty('color', '#fff', 'important');
           }
-          // Botón B (Amarillo)
           else if (cls.includes('button-b') || elemId.includes('button-b') || txt === 'B') {
             el.style.setProperty('background', 'rgba(244, 180, 0, 0.85)', 'important');
             el.style.setProperty('border', '2px solid #b28300', 'important');
             el.style.setProperty('color', '#000', 'important');
           }
-          // Botón X (Azul)
           else if (cls.includes('button-x') || elemId.includes('button-x') || txt === 'X') {
             el.style.setProperty('background', 'rgba(66, 133, 244, 0.85)', 'important');
             el.style.setProperty('border', '2px solid #1a56b8', 'important');
             el.style.setProperty('color', '#fff', 'important');
           }
-          // Botón Y (Verde)
           else if (cls.includes('button-y') || elemId.includes('button-y') || txt === 'Y') {
             el.style.setProperty('background', 'rgba(15, 157, 88, 0.85)', 'important');
             el.style.setProperty('border', '2px solid #0b6b3c', 'important');
@@ -134,7 +132,6 @@
         });
       });
 
-      // Iniciamos el observador
       observer.observe(document.body, { childList: true, subtree: true });
 
       const s = document.createElement('script');
