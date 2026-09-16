@@ -14,7 +14,6 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
-    /* --- CONTENEDOR DEL EMULADOR --- */
     #display {
       width: 100vw;
       height: calc(100dvh - 45px); 
@@ -36,7 +35,6 @@
       padding: 20px;
     }
 
-    /* --- MARCA DE AGUA (LOGO GRANDE) --- */
     #watermark {
       position: fixed;
       top: 4px; 
@@ -50,7 +48,6 @@
       user-select: none;
     }
 
-    /* --- CONTROLES SUPERIORES (GUARDAR, CARGAR, PANTALLA COMPLETA) --- */
     #top-controls {
       position: fixed;
       top: 8px; 
@@ -90,16 +87,10 @@
   <div id="msg">Iniciando cartucho...</div>
   <div id="display"></div>
 
-  <script>
-    const GAMES = {
-      "doom": { title: "DOOM", rom: "./roms/doom.sfc", system: "snes" },
-      "mk2":  { title: "Mortal Kombat II", rom: "./roms/mk2.sfc", system: "snes" },
-      "dkc1": { title: "Donkey Kong Country", rom: "./roms/dkc1.sfc", system: "snes" },
-      "dkc2": { title: "Donkey Kong Country 2", rom: "./roms/dkc2.sfc", system: "snes" },
-      "dkc3": { title: "Donkey Kong Country 3", rom: "./roms/dkc3.sfc", system: "snes" },
-      "ki":   { title: "Killer Instinct", rom: "./roms/ki.sfc", system: "snes" }
-    };
+  <!-- IMPORTAMOS LA LISTA DE JUEGOS DESDE EL NUEVO ARCHIVO -->
+  <script src="./games.js"></script>
 
+  <script>
     const params = new URLSearchParams(window.location.search);
     const id = params.get("game") || "doom";
 
@@ -122,7 +113,7 @@
           const state = await window.EJS_emulator.gameManager.getState();
           if (state && savesDB) {
             const tx = savesDB.transaction("states", "readwrite");
-            tx.objectStore("states").put(state, id); // Se guarda con el ID del juego (ej. "doom")
+            tx.objectStore("states").put(state, id);
             showToast("💾 Partida Guardada");
             if (navigator.vibrate) navigator.vibrate(30);
           }
@@ -168,7 +159,7 @@
     }
 
     // --- CARGA DEL JUEGO ---
-    if (GAMES[id]) {
+    if (typeof GAMES !== 'undefined' && GAMES[id]) {
       const selected = GAMES[id];
       window.EJS_player = '#display';
       window.EJS_core = selected.system;
@@ -177,12 +168,12 @@
       window.EJS_startOnLoaded = true;
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
 
-      // --- RESPUESTA HÁPTICA (VIBRACIÓN TÁCTIL) ---
       document.addEventListener('touchstart', function(e) {
         let target = e.target;
         while (target && target !== document.body) {
           const cls = (target.className || '').toString().toLowerCase();
           const elemId = (target.id || '').toString().toLowerCase();
+          
           if (cls.includes('button') || cls.includes('dpad') || cls.includes('direction') || 
               cls.includes('up') || cls.includes('down') || cls.includes('left') || cls.includes('right') ||
               elemId.includes('button') || elemId.includes('dpad')) {
@@ -193,7 +184,6 @@
         }
       }, { passive: true });
 
-      // --- ESTILIZADO DE BOTONES A, B, X, Y, L, R ---
       function styleBtn(el, bg, border, textColor = '#ffffff') {
         el.style.setProperty('background', bg, 'important');
         el.style.setProperty('border', border, 'important');
@@ -239,7 +229,7 @@
     } else {
       document.getElementById("msg").innerHTML = `
         <h3 style="color:#ff6b6b; margin-bottom: 8px;">Cartucho no encontrado</h3>
-        <p style="color:#aaa; font-size: 14px;">Revisa que el código en el chip NFC sea correcto.</p>
+        <p style="color:#aaa; font-size: 14px;">Revisa que el código en el chip NFC sea correcto, o verifica que la lista games.js se haya cargado.</p>
       `;
     }
 
