@@ -203,6 +203,12 @@
           const elemId = (el.id || '').toString().toLowerCase();
           const txt = (el.innerText || el.textContent || '').trim().toUpperCase();
 
+          // Identificamos rigurosamente si el elemento es parte de la cruceta
+          const isDpad = cls.includes('dpad') || elemId.includes('dpad') || 
+                         cls.includes('direction') || cls.includes('joystick') || 
+                         cls.includes('up') || cls.includes('down') || 
+                         cls.includes('left') || cls.includes('right');
+
           if (cls.includes('button-a') || elemId.includes('button-a') || txt === 'A') {
             styleBtn(el, 'rgba(230, 57, 70, 0.88)', '2px solid #9e1c11', '#ffffff');
           } else if (cls.includes('button-b') || elemId.includes('button-b') || txt === 'B') {
@@ -211,8 +217,10 @@
             styleBtn(el, 'rgba(29, 112, 184, 0.88)', '2px solid #144b7d', '#ffffff');
           } else if (cls.includes('button-y') || elemId.includes('button-y') || txt === 'Y') {
             styleBtn(el, 'rgba(42, 157, 143, 0.88)', '2px solid #1c6b60', '#ffffff');
-          } else if ( (cls.includes('button-l') && !cls.includes('left')) || txt === 'L' || txt === 'L1' ||
-                      (cls.includes('button-r') && !cls.includes('right')) || txt === 'R' || txt === 'R1' ) {
+          } 
+          // Solo pintamos de gris si NO es de la cruceta y es L o R
+          else if (!isDpad && (cls.includes('button-l') || txt === 'L' || txt === 'L1' || 
+                               cls.includes('button-r') || txt === 'R' || txt === 'R1')) {
             styleBtn(el, 'rgba(153, 153, 161, 0.85)', '2px solid #777780', '#ffffff');
           }
         });
