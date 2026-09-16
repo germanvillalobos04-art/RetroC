@@ -31,6 +31,22 @@
       text-align: center;
       padding: 20px;
     }
+
+    /* --- MARCA DE AGUA FLOTANTE --- */
+    #watermark {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 999999;
+      opacity: 0.3; /* 30% de opacidad */
+      max-width: 90px;
+      height: auto;
+      pointer-events: none; /* No estorba al pulsar la pantalla */
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* --- BOTÓN PANTALLA COMPLETA --- */
     #fs-btn {
       position: fixed;
       top: 12px;
@@ -50,23 +66,76 @@
     #fs-btn:active {
       background: #ff4757;
     }
+
+    /* --- ESTILOS CONTROL SNES (COLORES OFICIALES) --- */
+    /* Botón B (Abajo): Amarillo */
+    .ejs--virtual-gamepad-button-b,
+    [data-button="b"],
+    [data-key="b"] {
+      background: rgba(255, 183, 3, 0.82) !important;
+      border: 2px solid #ffa200 !important;
+      color: #000 !important;
+      font-weight: bold !important;
+    }
+
+    /* Botón A (Derecha): Rojo */
+    .ejs--virtual-gamepad-button-a,
+    [data-button="a"],
+    [data-key="a"] {
+      background: rgba(230, 57, 70, 0.82) !important;
+      border: 2px solid #b71c1c !important;
+      color: #fff !important;
+      font-weight: bold !important;
+    }
+
+    /* Botón Y (Izquierda): Verde */
+    .ejs--virtual-gamepad-button-y,
+    [data-button="y"],
+    [data-key="y"] {
+      background: rgba(42, 157, 143, 0.82) !important;
+      border: 2px solid #1f6f65 !important;
+      color: #fff !important;
+      font-weight: bold !important;
+    }
+
+    /* Botón X (Arriba): Azul */
+    .ejs--virtual-gamepad-button-x,
+    [data-button="x"],
+    [data-key="x"] {
+      background: rgba(69, 123, 157, 0.82) !important;
+      border: 2px solid #1d4e6d !important;
+      color: #fff !important;
+      font-weight: bold !important;
+    }
+
+    /* Gatillos L y R: Gris SNES */
+    .ejs--virtual-gamepad-button-l,
+    .ejs--virtual-gamepad-button-r,
+    [data-button="l"],
+    [data-button="r"] {
+      background: rgba(140, 140, 150, 0.75) !important;
+      border: 1px solid #ffffff66 !important;
+      color: #fff !important;
+    }
   </style>
 </head>
 <body>
+  <!-- Marca de agua (logo.png debe estar en tu repositorio) -->
+  <img id="watermark" src="./logo.png" alt="Logo" onerror="this.style.display='none'">
+
   <button id="fs-btn" onclick="toggleFullScreen()">⛶ Pantalla Completa</button>
 
   <div id="msg">Iniciando cartucho...</div>
   <div id="display"></div>
 
   <script>
-    // APUNTANDO A LA CARPETA roms/
     const GAMES = {
-      "doom": { title: "DOOM", rom: "roms/doom.sfc", system: "snes" },
-      "mk2":  { title: "Mortal Kombat II", rom: "roms/mk2.sfc", system: "snes" },
-      "dkc1": { title: "Donkey Kong Country", rom: "roms/dkc1.sfc", system: "snes" },
-      "dkc2": { title: "Donkey Kong Country 2", rom: "roms/dkc2.sfc", system: "snes" },
-      "dkc3": { title: "Donkey Kong Country 3", rom: "roms/dkc3.sfc", system: "snes" },
-      "ki":   { title: "Killer Instinct", rom: "roms/ki.sfc", system: "snes" }
+      "doom": { title: "DOOM", rom: "./roms/doom.sfc", system: "snes" },
+      "mk2":  { title: "Mortal Kombat II", rom: "./roms/mk2.sfc", system: "snes" },
+      "dkc1": { title: "Donkey Kong Country", rom: "./roms/dkc1.sfc", system: "snes" },
+      "dkc2": { title: "Donkey Kong Country 2", rom: "./roms/dkc2.sfc", system: "snes" },
+      "dkc3": { title: "Donkey Kong Country 3", rom: "./roms/dkc3.sfc", system: "snes" },
+      "ki":   { title: "Killer Instinct", rom: "./roms/ki.sfc", system: "snes" }
     };
 
     const params = new URLSearchParams(window.location.search);
