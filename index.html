@@ -36,15 +36,15 @@
       padding: 20px;
     }
 
-    /* --- MARCA DE AGUA (LOGO) --- */
+    /* --- MARCA DE AGUA (LOGO MÁS GRANDE) --- */
     #watermark {
       position: fixed;
-      top: 8px;
+      top: 4px; /* Un poco más arriba para aprovechar el espacio */
       left: 12px;
       z-index: 9999999;
       opacity: 1.0; 
-      max-width: 120px; 
-      max-height: 28px; 
+      max-width: 180px;  /* Mucho más ancho */
+      max-height: 36px;  /* Más alto, llenando la barra superior */
       object-fit: contain;
       pointer-events: none; 
       user-select: none;
@@ -70,7 +70,10 @@
   </style>
 </head>
 <body>
+  <!-- Marca de agua -->
   <img id="watermark" src="./logo.png" alt="Logo">
+
+  <!-- Botón Pantalla Completa -->
   <button id="fs-btn" onclick="toggleFullScreen()">⛶ Pantalla Completa</button>
 
   <div id="msg">Iniciando cartucho...</div>
@@ -98,61 +101,48 @@
       window.EJS_startOnLoaded = true;
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
 
+      // Función para pintar botones y forzar texto blanco
+      function styleBtn(el, bg, border, textColor = '#ffffff') {
+        el.style.setProperty('background', bg, 'important');
+        el.style.setProperty('border', border, 'important');
+        el.style.setProperty('color', textColor, 'important');
+        el.style.setProperty('text-shadow', '0 1px 2px rgba(0,0,0,0.8)', 'important');
+
+        const innerTextEls = el.querySelectorAll('*');
+        innerTextEls.forEach(child => {
+          child.style.setProperty('color', textColor, 'important');
+          child.style.setProperty('fill', textColor, 'important');
+        });
+      }
+
+      // Observador de elementos táctiles de EmulatorJS
       const observer = new MutationObserver(() => {
-        const elements = document.querySelectorAll('div, button');
+        const elements = document.querySelectorAll('div, button, span');
         elements.forEach(el => {
           const cls = (el.className || '').toString().toLowerCase();
           const elemId = (el.id || '').toString().toLowerCase();
-          // Convertimos a mayúscula para asegurar la coincidencia
-          const txt = (el.innerText || '').trim().toUpperCase();
+          const txt = (el.innerText || el.textContent || '').trim().toUpperCase();
 
           // Botón A (Rojo, Letra Blanca)
           if (cls.includes('button-a') || elemId.includes('button-a') || txt === 'A') {
-            el.style.setProperty('background', 'rgba(219, 68, 55, 0.85)', 'important');
-            el.style.setProperty('border', '2px solid #9e1c11', 'important');
-            el.style.setProperty('color', '#ffffff', 'important');
+            styleBtn(el, 'rgba(230, 57, 70, 0.88)', '2px solid #9e1c11', '#ffffff');
           }
           // Botón B (Amarillo, Letra Blanca)
           else if (cls.includes('button-b') || elemId.includes('button-b') || txt === 'B') {
-            el.style.setProperty('background', 'rgba(244, 180, 0, 0.85)', 'important');
-            el.style.setProperty('border', '2px solid #b28300', 'important');
-            el.style.setProperty('color', '#ffffff', 'important');
+            styleBtn(el, 'rgba(255, 183, 3, 0.88)', '2px solid #b28300', '#ffffff');
           }
           // Botón X (Azul, Letra Blanca)
           else if (cls.includes('button-x') || elemId.includes('button-x') || txt === 'X') {
-            el.style.setProperty('background', 'rgba(66, 133, 244, 0.85)', 'important');
-            el.style.setProperty('border', '2px solid #1a56b8', 'important');
-            el.style.setProperty('color', '#ffffff', 'important');
+            styleBtn(el, 'rgba(29, 112, 184, 0.88)', '2px solid #144b7d', '#ffffff');
           }
           // Botón Y (Verde, Letra Blanca)
           else if (cls.includes('button-y') || elemId.includes('button-y') || txt === 'Y') {
-            el.style.setProperty('background', 'rgba(15, 157, 88, 0.85)', 'important');
-            el.style.setProperty('border', '2px solid #0b6b3c', 'important');
-            el.style.setProperty('color', '#ffffff', 'important');
+            styleBtn(el, 'rgba(42, 157, 143, 0.88)', '2px solid #1c6b60', '#ffffff');
           }
-          // Botón START (Negro, Letra Blanca)
-          else if (cls.includes('button-start') || elemId.includes('button-start') || txt === 'START') {
-            el.style.setProperty('background', 'rgba(25, 25, 25, 0.95)', 'important');
-            el.style.setProperty('border', '2px solid #000000', 'important');
-            el.style.setProperty('color', '#ffffff', 'important');
-          }
-          // Botón SELECT (Negro, Letra Blanca)
-          else if (cls.includes('button-select') || elemId.includes('button-select') || txt === 'SELECT') {
-            el.style.setProperty('background', 'rgba(25, 25, 25, 0.95)', 'important');
-            el.style.setProperty('border', '2px solid #000000', 'important');
-            el.style.setProperty('color', '#ffffff', 'important');
-          }
-          // Botón L y R (Gris SNES)
-          else if (cls.includes('button-l') || elemId.includes('button-l') || txt === 'L' || txt === 'L1' || 
+          // Gatillos L y R (Gris SNES)
+          else if (cls.includes('button-l') || elemId.includes('button-l') || txt === 'L' || txt === 'L1' ||
                    cls.includes('button-r') || elemId.includes('button-r') || txt === 'R' || txt === 'R1') {
-            el.style.setProperty('background', 'rgba(181, 182, 181, 0.9)', 'important');
-            el.style.setProperty('border', '2px solid #8e8e8e', 'important');
-            el.style.setProperty('color', '#222222', 'important');
-          }
-          // D-Pad / Cruceta (Gris SNES)
-          else if (cls.includes('dpad') || elemId.includes('dpad') || cls.includes('joystick') || cls.includes('direction')) {
-            el.style.setProperty('background', 'rgba(181, 182, 181, 0.8)', 'important');
-            el.style.setProperty('border-color', '#8e8e8e', 'important');
+            styleBtn(el, 'rgba(153, 153, 161, 0.85)', '2px solid #777780', '#ffffff');
           }
         });
       });
