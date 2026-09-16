@@ -33,17 +33,17 @@
       padding: 20px;
     }
 
-    /* --- MARCA DE AGUA (LOGO) --- */
+    /* --- MARCA DE AGUA (LOGO MODIFICADO) --- */
     #watermark {
       position: fixed;
       top: 15px;
       left: 15px;
       z-index: 9999999;
-      opacity: 0.30; /* 30% de opacidad */
-      max-width: 90px;
-      max-height: 50px;
+      opacity: 0.50; /* Opacidad subida al 50% */
+      max-width: 140px; /* Tamaño más grande (antes era 90px) */
+      max-height: 80px;
       object-fit: contain;
-      pointer-events: none; /* No bloquea toques de dedos */
+      pointer-events: none; /* No bloquea los toques de los dedos */
       user-select: none;
     }
 
@@ -70,6 +70,7 @@
   <!-- Marca de agua -->
   <img id="watermark" src="./logo.png" alt="Logo">
 
+  <!-- Botón Pantalla Completa -->
   <button id="fs-btn" onclick="toggleFullScreen()">⛶ Pantalla Completa</button>
 
   <div id="msg">Iniciando cartucho...</div>
@@ -97,41 +98,44 @@
       window.EJS_startOnLoaded = true;
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
 
-      // Script para aplicar los colores oficiales de SNES a los botones
-      function colorizeGamepad() {
-        const elements = document.querySelectorAll('*');
+      // --- OBSERVADOR AGRESIVO PARA COLOREAR CONTROLES ---
+      // Esto vigila constantemente la pantalla y colorea los botones apenas aparecen
+      const observer = new MutationObserver(() => {
+        const elements = document.querySelectorAll('div, button');
         elements.forEach(el => {
-          const txt = (el.innerText || el.textContent || "").trim();
-          // Solo coloreamos si el elemento es un botón individual
-          if (el.children.length === 0) {
-            if (txt === 'B') {
-              el.style.setProperty('background', 'rgba(244, 180, 0, 0.85)', 'important'); // Amarillo SNES
-              el.style.setProperty('border', '2px solid #b28300', 'important');
-              el.style.setProperty('color', '#000', 'important');
-              el.style.setProperty('font-weight', 'bold', 'important');
-            } else if (txt === 'A') {
-              el.style.setProperty('background', 'rgba(219, 68, 55, 0.85)', 'important');  // Rojo SNES
-              el.style.setProperty('border', '2px solid #9e1c11', 'important');
-              el.style.setProperty('color', '#fff', 'important');
-              el.style.setProperty('font-weight', 'bold', 'important');
-            } else if (txt === 'Y') {
-              el.style.setProperty('background', 'rgba(15, 157, 88, 0.85)', 'important');  // Verde SNES
-              el.style.setProperty('border', '2px solid #0b6b3c', 'important');
-              el.style.setProperty('color', '#fff', 'important');
-              el.style.setProperty('font-weight', 'bold', 'important');
-            } else if (txt === 'X') {
-              el.style.setProperty('background', 'rgba(66, 133, 244, 0.85)', 'important'); // Azul SNES
-              el.style.setProperty('border', '2px solid #1a56b8', 'important');
-              el.style.setProperty('color', '#fff', 'important');
-              el.style.setProperty('font-weight', 'bold', 'important');
-            }
+          const cls = (el.className || '').toString().toLowerCase();
+          const elemId = (el.id || '').toString().toLowerCase();
+          const txt = (el.innerText || '').trim();
+
+          // Botón A (Rojo)
+          if (cls.includes('button-a') || elemId.includes('button-a') || txt === 'A') {
+            el.style.setProperty('background', 'rgba(219, 68, 55, 0.85)', 'important');
+            el.style.setProperty('border', '2px solid #9e1c11', 'important');
+            el.style.setProperty('color', '#fff', 'important');
+          }
+          // Botón B (Amarillo)
+          else if (cls.includes('button-b') || elemId.includes('button-b') || txt === 'B') {
+            el.style.setProperty('background', 'rgba(244, 180, 0, 0.85)', 'important');
+            el.style.setProperty('border', '2px solid #b28300', 'important');
+            el.style.setProperty('color', '#000', 'important');
+          }
+          // Botón X (Azul)
+          else if (cls.includes('button-x') || elemId.includes('button-x') || txt === 'X') {
+            el.style.setProperty('background', 'rgba(66, 133, 244, 0.85)', 'important');
+            el.style.setProperty('border', '2px solid #1a56b8', 'important');
+            el.style.setProperty('color', '#fff', 'important');
+          }
+          // Botón Y (Verde)
+          else if (cls.includes('button-y') || elemId.includes('button-y') || txt === 'Y') {
+            el.style.setProperty('background', 'rgba(15, 157, 88, 0.85)', 'important');
+            el.style.setProperty('border', '2px solid #0b6b3c', 'important');
+            el.style.setProperty('color', '#fff', 'important');
           }
         });
-      }
+      });
 
-      // Revisa periódicamente mientras carga el juego hasta pintar los botones
-      const colorTimer = setInterval(colorizeGamepad, 600);
-      setTimeout(() => clearInterval(colorTimer), 25000); // Se detiene a los 25s
+      // Iniciamos el observador
+      observer.observe(document.body, { childList: true, subtree: true });
 
       const s = document.createElement('script');
       s.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
