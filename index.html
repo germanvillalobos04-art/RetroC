@@ -87,7 +87,7 @@
   <div id="msg">Iniciando cartucho...</div>
   <div id="display"></div>
 
-  <!-- IMPORTAMOS LA LISTA DE JUEGOS DESDE EL NUEVO ARCHIVO -->
+  <!-- CATÁLOGO DE JUEGOS -->
   <script src="./games.js"></script>
 
   <script>
@@ -117,13 +117,8 @@
             showToast("💾 Partida Guardada");
             if (navigator.vibrate) navigator.vibrate(30);
           }
-        } catch (e) {
-          console.error(e);
-          showToast("❌ Error al guardar");
-        }
-      } else {
-        showToast("⏳ Espera a que cargue el juego");
-      }
+        } catch (e) { console.error(e); showToast("❌ Error al guardar"); }
+      } else { showToast("⏳ Espera a que cargue el juego"); }
     }
 
     async function quickLoad() {
@@ -137,17 +132,10 @@
               await window.EJS_emulator.gameManager.loadState(state);
               showToast("📂 Partida Cargada");
               if (navigator.vibrate) navigator.vibrate(30);
-            } else {
-              showToast("❌ No hay partida guardada");
-            }
+            } else { showToast("❌ No hay partida guardada"); }
           };
-        } catch (e) {
-          console.error(e);
-          showToast("❌ Error al cargar");
-        }
-      } else {
-        showToast("⏳ Espera a que cargue el juego");
-      }
+        } catch (e) { console.error(e); showToast("❌ Error al cargar"); }
+      } else { showToast("⏳ Espera a que cargue el juego"); }
     }
 
     function showToast(text) {
@@ -168,12 +156,12 @@
       window.EJS_startOnLoaded = true;
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
 
+      // --- RESPUESTA HÁPTICA ---
       document.addEventListener('touchstart', function(e) {
         let target = e.target;
         while (target && target !== document.body) {
           const cls = (target.className || '').toString().toLowerCase();
           const elemId = (target.id || '').toString().toLowerCase();
-          
           if (cls.includes('button') || cls.includes('dpad') || cls.includes('direction') || 
               cls.includes('up') || cls.includes('down') || cls.includes('left') || cls.includes('right') ||
               elemId.includes('button') || elemId.includes('dpad')) {
@@ -184,6 +172,66 @@
         }
       }, { passive: true });
 
+      // --- FAT THUMB SLIDER (CORRER Y SALTAR A LA VEZ) ---
+      const slideState = new Map();
+
+      function getActionBtn(elem) {
+        if (!elem) return null;
+        const btn = elem.closest('div[class*="button-"], button[id*="button-"], span');
+        if (!btn) return null;
+        const txt = (btn.innerText || btn.textContent || '').trim().toUpperCase();
+        const cls = (btn.className || '').toString().toLowerCase();
+        if (['A','B','X','Y'].includes(txt) || cls.includes('button-a') || cls.includes('button-b') || cls.includes('button-x') || cls.includes('button-y')) {
+            return btn;
+        }
+        return null;
+      }
+
+      function pressSimulated(elem, type) {
+        elem.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
+        const mouseType = type === 'touchstart' ? 'mousedown' : 'mouseup';
+        elem.dispatchEvent(new MouseEvent(mouseType, { bubbles: true, cancelable: true, view: window }));
+      }
+
+      document.addEventListener('touchstart', (e) => {
+        for (let touch of e.changedTouches) {
+           const btn = getActionBtn(document.elementFromPoint(touch.clientX, touch.clientY));
+           slideState.set(touch.identifier, { originBtn: btn, currentBtn: btn });
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchmove', (e) => {
+        for (let touch of e.changedTouches) {
+           const state = slideState.get(touch.identifier);
+           if (!state) continue;
+
+           const newBtn = getActionBtn(document.elementFromPoint(touch.clientX, touch.clientY));
+           
+           if (newBtn !== state.currentBtn) {
+              if (state.currentBtn && state.currentBtn !== state.originBtn) {
+                 pressSimulated(state.currentBtn, 'touchend');
+              }
+              if (newBtn && newBtn !== state.originBtn) {
+                 pressSimulated(newBtn, 'touchstart');
+              }
+              state.currentBtn = newBtn;
+           }
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchend', (e) => {
+        for (let touch of e.changedTouches) {
+           const state = slideState.get(touch.identifier);
+           if (state) {
+              if (state.currentBtn && state.currentBtn !== state.originBtn) {
+                 pressSimulated(state.currentBtn, 'touchend');
+              }
+              slideState.delete(touch.identifier);
+           }
+        }
+      }, { passive: true });
+
+      // --- ESTILIZADO DE COLORES ---
       function styleBtn(el, bg, border, textColor = '#ffffff') {
         el.style.setProperty('background', bg, 'important');
         el.style.setProperty('border', border, 'important');
@@ -203,11 +251,7 @@
           const elemId = (el.id || '').toString().toLowerCase();
           const txt = (el.innerText || el.textContent || '').trim().toUpperCase();
 
-          // Identificamos rigurosamente si el elemento es parte de la cruceta
-          const isDpad = cls.includes('dpad') || elemId.includes('dpad') || 
-                         cls.includes('direction') || cls.includes('joystick') || 
-                         cls.includes('up') || cls.includes('down') || 
-                         cls.includes('left') || cls.includes('right');
+          const isDpad = cls.includes('dpad') || elemId.includes('dpad') || cls.includes('direction') || cls.includes('joystick') || cls.includes('up') || cls.includes('down') || cls.includes('left') || cls.includes('right');
 
           if (cls.includes('button-a') || elemId.includes('button-a') || txt === 'A') {
             styleBtn(el, 'rgba(230, 57, 70, 0.88)', '2px solid #9e1c11', '#ffffff');
@@ -217,10 +261,7 @@
             styleBtn(el, 'rgba(29, 112, 184, 0.88)', '2px solid #144b7d', '#ffffff');
           } else if (cls.includes('button-y') || elemId.includes('button-y') || txt === 'Y') {
             styleBtn(el, 'rgba(42, 157, 143, 0.88)', '2px solid #1c6b60', '#ffffff');
-          } 
-          // Solo pintamos de gris si NO es de la cruceta y es L o R
-          else if (!isDpad && (cls.includes('button-l') || txt === 'L' || txt === 'L1' || 
-                               cls.includes('button-r') || txt === 'R' || txt === 'R1')) {
+          } else if (!isDpad && (cls.includes('button-l') || txt === 'L' || txt === 'L1' || cls.includes('button-r') || txt === 'R' || txt === 'R1')) {
             styleBtn(el, 'rgba(153, 153, 161, 0.85)', '2px solid #777780', '#ffffff');
           }
         });
@@ -230,14 +271,12 @@
 
       const s = document.createElement('script');
       s.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-      s.onload = () => { 
-        document.getElementById('msg').style.display = 'none'; 
-      };
+      s.onload = () => { document.getElementById('msg').style.display = 'none'; };
       document.body.appendChild(s);
     } else {
       document.getElementById("msg").innerHTML = `
         <h3 style="color:#ff6b6b; margin-bottom: 8px;">Cartucho no encontrado</h3>
-        <p style="color:#aaa; font-size: 14px;">Revisa que el código en el chip NFC sea correcto, o verifica que la lista games.js se haya cargado.</p>
+        <p style="color:#aaa; font-size: 14px;">Revisa que el código en el chip NFC sea correcto, o verifica que games.js se haya cargado.</p>
       `;
     }
 
@@ -245,21 +284,16 @@
       const elem = document.documentElement;
       const btn = document.getElementById('fs-btn');
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        if (elem.requestFullscreen) {
-          elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) {
-          elem.webkitRequestFullscreen();
-        }
+        if (elem.requestFullscreen) { elem.requestFullscreen(); } 
+        else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
         btn.innerText = '✕ Salir';
       } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        }
+        if (document.exitFullscreen) { document.exitFullscreen(); } 
+        else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
         btn.innerText = '⛶ Pantalla';
       }
     }
   </script>
 </body>
 </html>
+s
