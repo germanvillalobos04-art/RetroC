@@ -160,21 +160,89 @@
       window.EJS_startOnLoaded = true;
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
 
-      // --- RESPUESTA HÁPTICA ---
+      // --- RESPUESTA HÁPTICA Y DESLIZAMIENTO DE BOTONES (FAT THUMB) ---
+      const fatThumbState = new Map();
+
+      // Crea toques fantasma para engañar al emulador
+      function simularToque(btn, type) {
+        if(!btn) return;
+        btn.dispatchEvent(new PointerEvent(type === 'press' ? 'pointerdown' : 'pointerup', { bubbles: true, cancelable: true }));
+        btn.dispatchEvent(new MouseEvent(type === 'press' ? 'mousedown' : 'mouseup', { bubbles: true, cancelable: true }));
+        try {
+          btn.dispatchEvent(new TouchEvent(type === 'press' ? 'touchstart' : 'touchend', { bubbles: true, cancelable: true }));
+        } catch(e){}
+      }
+
+      function obtenerBotonVirtual(el) {
+        if (!el) return null;
+        const btn = el.closest('div[class*="button-"], button[id*="button-"]');
+        if (!btn) return null;
+        const txt = (btn.innerText || btn.textContent || '').trim().toUpperCase();
+        if (['A','B','X','Y'].includes(txt) || (btn.className||'').toLowerCase().includes('button-')) return btn;
+        return null;
+      }
+
+      // 1. Al tocar por primera vez
       document.addEventListener('touchstart', function(e) {
-        let target = e.target;
-        while (target && target !== document.body) {
-          const cls = (target.className || '').toString().toLowerCase();
-          const elemId = (target.id || '').toString().toLowerCase();
-          if (cls.includes('button') || cls.includes('dpad') || cls.includes('direction') || 
-              cls.includes('up') || cls.includes('down') || cls.includes('left') || cls.includes('right') ||
-              elemId.includes('button') || elemId.includes('dpad')) {
+        for (let t of e.changedTouches) {
+          const target = document.elementFromPoint(t.clientX, t.clientY);
+          const btn = obtenerBotonVirtual(target);
+          
+          if (btn) {
+            fatThumbState.set(t.identifier, { origin: btn, secondaries: new Set() });
             if (navigator.vibrate) navigator.vibrate(15);
-            break;
           }
-          target = target.parentNode;
         }
       }, { passive: true });
+
+      // 2. Al deslizar el dedo (Aquí ocurre la magia)
+      document.addEventListener('touchmove', function(e) {
+        for (let t of e.changedTouches) {
+          const state = fatThumbState.get(t.identifier);
+          if (!state) continue;
+
+          const currentHover = obtenerBotonVirtual(document.elementFromPoint(t.clientX, t.clientY));
+          
+          // Si nos movimos a un botón diferente al original
+          if (currentHover && currentHover !== state.origin) {
+            if (!state.secondaries.has(currentHover)) {
+              simularToque(currentHover, 'press'); // Presiona el nuevo botón (B)
+              state.secondaries.add(currentHover);
+              if (navigator.vibrate) navigator.vibrate(15);
+            }
+          }
+
+          // Si nos salimos del segundo botón, lo soltamos (¡Pero la Y original sigue presionada!)
+          for (let sec of state.secondaries) {
+            if (sec !== currentHover) {
+              simularToque(sec, 'release');
+              state.secondaries.delete(sec);
+            }
+          }
+        }
+      }, { passive: true });
+
+      // 3. Al levantar el dedo (Soltamos todo)
+      document.addEventListener('touchend', function(e) {
+        for (let t of e.changedTouches) {
+          const state = fatThumbState.get(t.identifier);
+          if (state) {
+            for (let sec of state.secondaries) simularToque(sec, 'release');
+            fatThumbState.delete(t.identifier);
+          }
+        }
+      }, { passive: true });
+      
+      document.addEventListener('touchcancel', function(e) {
+        for (let t of e.changedTouches) {
+          const state = fatThumbState.get(t.identifier);
+          if (state) {
+            for (let sec of state.secondaries) simularToque(sec, 'release');
+            fatThumbState.delete(t.identifier);
+          }
+        }
+      }, { passive: true });
+
 
       // --- ESTILIZADO DE COLORES ---
       function styleBtn(el, bg, border, textColor = '#ffffff') {
@@ -217,10 +285,9 @@
       const s = document.createElement('script');
       s.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
       
-      // Aquí lanzamos el mensaje al cargar
+      // Mensaje al terminar de cargar
       s.onload = () => { 
         document.getElementById('msg').style.display = 'none'; 
-        // Mensaje de 3.5 segundos recomendando pantalla completa
         showToast("👆 Toca '⛶ Pantalla' arriba a la derecha para iniciar", 3500);
       };
       
