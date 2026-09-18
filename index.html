@@ -114,11 +114,11 @@
           if (state && savesDB) {
             const tx = savesDB.transaction("states", "readwrite");
             tx.objectStore("states").put(state, id);
-            showToast("💾 Partida Guardada");
+            showToast("💾 Partida Guardada", 2000);
             if (navigator.vibrate) navigator.vibrate(30);
           }
-        } catch (e) { console.error(e); showToast("❌ Error al guardar"); }
-      } else { showToast("⏳ Espera a que cargue el juego"); }
+        } catch (e) { console.error(e); showToast("❌ Error al guardar", 2000); }
+      } else { showToast("⏳ Espera a que cargue el juego", 2000); }
     }
 
     async function quickLoad() {
@@ -130,20 +130,24 @@
             const state = e.target.result;
             if (state) {
               await window.EJS_emulator.gameManager.loadState(state);
-              showToast("📂 Partida Cargada");
+              showToast("📂 Partida Cargada", 2000);
               if (navigator.vibrate) navigator.vibrate(30);
-            } else { showToast("❌ No hay partida guardada"); }
+            } else { showToast("❌ No hay partida guardada", 2000); }
           };
-        } catch (e) { console.error(e); showToast("❌ Error al cargar"); }
-      } else { showToast("⏳ Espera a que cargue el juego"); }
+        } catch (e) { console.error(e); showToast("❌ Error al cargar", 2000); }
+      } else { showToast("⏳ Espera a que cargue el juego", 2000); }
     }
 
-    function showToast(text) {
+    // Función de notificaciones con tiempo ajustable
+    function showToast(text, duration) {
       let t = document.createElement('div');
       t.innerText = text;
-      t.style.cssText = "position:fixed; top:60px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:#fff; padding:10px 22px; border-radius:20px; z-index:9999999; font-weight:bold; font-size:14px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2);";
+      t.style.cssText = "position:fixed; top:60px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:#fff; padding:10px 22px; border-radius:20px; z-index:9999999; font-weight:bold; font-size:14px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); transition: opacity 0.3s;";
       document.body.appendChild(t);
-      setTimeout(() => t.remove(), 2000);
+      setTimeout(() => {
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 300);
+      }, duration);
     }
 
     // --- CARGA DEL JUEGO ---
@@ -169,65 +173,6 @@
             break;
           }
           target = target.parentNode;
-        }
-      }, { passive: true });
-
-      // --- FAT THUMB SLIDER (CORRER Y SALTAR A LA VEZ) ---
-      const slideState = new Map();
-
-      function getActionBtn(elem) {
-        if (!elem) return null;
-        const btn = elem.closest('div[class*="button-"], button[id*="button-"], span');
-        if (!btn) return null;
-        const txt = (btn.innerText || btn.textContent || '').trim().toUpperCase();
-        const cls = (btn.className || '').toString().toLowerCase();
-        if (['A','B','X','Y'].includes(txt) || cls.includes('button-a') || cls.includes('button-b') || cls.includes('button-x') || cls.includes('button-y')) {
-            return btn;
-        }
-        return null;
-      }
-
-      function pressSimulated(elem, type) {
-        elem.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-        const mouseType = type === 'touchstart' ? 'mousedown' : 'mouseup';
-        elem.dispatchEvent(new MouseEvent(mouseType, { bubbles: true, cancelable: true, view: window }));
-      }
-
-      document.addEventListener('touchstart', (e) => {
-        for (let touch of e.changedTouches) {
-           const btn = getActionBtn(document.elementFromPoint(touch.clientX, touch.clientY));
-           slideState.set(touch.identifier, { originBtn: btn, currentBtn: btn });
-        }
-      }, { passive: true });
-
-      document.addEventListener('touchmove', (e) => {
-        for (let touch of e.changedTouches) {
-           const state = slideState.get(touch.identifier);
-           if (!state) continue;
-
-           const newBtn = getActionBtn(document.elementFromPoint(touch.clientX, touch.clientY));
-           
-           if (newBtn !== state.currentBtn) {
-              if (state.currentBtn && state.currentBtn !== state.originBtn) {
-                 pressSimulated(state.currentBtn, 'touchend');
-              }
-              if (newBtn && newBtn !== state.originBtn) {
-                 pressSimulated(newBtn, 'touchstart');
-              }
-              state.currentBtn = newBtn;
-           }
-        }
-      }, { passive: true });
-
-      document.addEventListener('touchend', (e) => {
-        for (let touch of e.changedTouches) {
-           const state = slideState.get(touch.identifier);
-           if (state) {
-              if (state.currentBtn && state.currentBtn !== state.originBtn) {
-                 pressSimulated(state.currentBtn, 'touchend');
-              }
-              slideState.delete(touch.identifier);
-           }
         }
       }, { passive: true });
 
@@ -271,7 +216,14 @@
 
       const s = document.createElement('script');
       s.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-      s.onload = () => { document.getElementById('msg').style.display = 'none'; };
+      
+      // Aquí lanzamos el mensaje al cargar
+      s.onload = () => { 
+        document.getElementById('msg').style.display = 'none'; 
+        // Mensaje de 3.5 segundos recomendando pantalla completa
+        showToast("👆 Toca '⛶ Pantalla' arriba a la derecha para iniciar", 3500);
+      };
+      
       document.body.appendChild(s);
     } else {
       document.getElementById("msg").innerHTML = `
@@ -296,4 +248,3 @@
   </script>
 </body>
 </html>
-s
