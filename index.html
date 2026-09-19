@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Mini Cartuchos Retro</title>
+  <title>Mini Retro Cartuchos</title>
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#000000">
 
@@ -15,43 +15,115 @@
       overflow: hidden; color: #fff;
     }
     
-    /* ESTILOS COMUNES */
-    .view-container { display: none; width: 100%; height: 100%; overflow-y: auto; padding-bottom: 30px; }
+    /* CONTENEDOR GENERAL */
+    .view-container { display: none; width: 100%; height: 100%; overflow-y: auto; padding-bottom: 40px; }
     .active-view { display: block; }
-    .brand-logo { display: block; margin: 20px auto; max-width: 200px; }
+    .brand-logo { display: block; margin: 16px auto; max-width: 180px; }
 
-    /* 1. VISTA HUB (COLECCIÓN) */
-    #hub-view { padding: 20px; text-align: center; }
-    .hub-title { font-size: 1.5rem; margin-bottom: 20px; color: #e5e5e5; text-transform: uppercase; letter-spacing: 2px; }
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 500px; margin: 0 auto; }
-    .cartridge {
-      position: relative; aspect-ratio: 1; border-radius: 12px; background: #222;
-      border: 2px solid #333; overflow: hidden; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.2s;
+    /* --- VISTA HUB (DOS LISTAS VERTICALES) --- */
+    #hub-view { padding: 15px; }
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 20px 0 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .cartridge:active { transform: scale(0.95); }
-    .cart-bg { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-    .locked .cart-bg { filter: grayscale(100%) blur(2px) brightness(0.3); opacity: 0.4; }
-    .lock-icon { font-size: 2.5rem; z-index: 2; color: #666; }
-    .cart-title-overlay {
-      position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.8);
-      padding: 6px; font-size: 0.8rem; font-weight: bold; z-index: 2;
+    .title-unlocked { color: #4ade80; }
+    .title-locked { color: #9ca3af; }
+
+    .games-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 500px;
+      margin: 0 auto;
     }
 
-    /* 2. VISTA INFO (DESCRIPCIÓN) */
+    /* TARJETAS VERTICALES DE CADA JUEGO */
+    .game-card {
+      display: flex;
+      align-items: center;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 10px 14px;
+      gap: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .game-card:active { transform: scale(0.98); }
+
+    .card-thumb {
+      width: 58px;
+      height: 58px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1px solid #3f3f46;
+    }
+
+    .card-details {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      text-align: left;
+    }
+
+    .card-name {
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: #fafafa;
+      margin-bottom: 3px;
+    }
+
+    .card-subtext {
+      font-size: 0.8rem;
+      color: #a1a1aa;
+    }
+
+    /* ESTILO BLOQUEADO */
+    .card-locked {
+      background: #121214;
+      border-color: #202024;
+      opacity: 0.7;
+    }
+    .card-locked .card-thumb {
+      filter: grayscale(100%) brightness(0.4);
+      border-color: #27272a;
+    }
+    .card-locked .card-name {
+      color: #71717a;
+    }
+    .card-locked .card-subtext {
+      color: #52525b;
+    }
+
+    .empty-message {
+      font-size: 0.85rem;
+      color: #52525b;
+      font-style: italic;
+      padding: 8px 4px;
+    }
+
+    /* --- VISTA INFO --- */
     #info-view { padding: 30px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-    #info-cover { width: 180px; height: 180px; object-fit: cover; border-radius: 16px; border: 3px solid #555; box-shadow: 0 8px 16px rgba(0,0,0,0.8); margin-bottom: 20px; }
-    #info-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 15px; color: #fff; }
-    #info-desc { font-size: 1rem; color: #bbb; line-height: 1.5; margin-bottom: 30px; max-width: 400px; }
+    #info-cover { width: 170px; height: 170px; object-fit: cover; border-radius: 16px; border: 3px solid #3f3f46; box-shadow: 0 8px 16px rgba(0,0,0,0.8); margin-bottom: 20px; }
+    #info-title { font-size: 1.6rem; font-weight: bold; margin-bottom: 12px; }
+    #info-desc { font-size: 0.95rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 25px; max-width: 400px; }
     
     .btn {
-      padding: 14px 24px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; border: none;
-      cursor: pointer; width: 100%; max-width: 300px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 20px; font-size: 1rem; font-weight: bold; border-radius: 25px; border: none;
+      cursor: pointer; width: 100%; max-width: 320px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .btn-play { background: linear-gradient(135deg, #e63946, #9e1c11); color: #fff; box-shadow: 0 4px 12px rgba(230,57,70,0.4); }
-    .btn-home { background: #333; color: #fff; border: 1px solid #555; }
+    .btn-play { background: #e63946; color: #fff; box-shadow: 0 4px 12px rgba(230,57,70,0.3); }
+    .btn-home { background: #27272a; color: #fff; border: 1px solid #3f3f46; }
 
-    /* 3. VISTA EMULADOR */
+    /* --- VISTA EMULADOR --- */
     #emulator-view { position: relative; width: 100%; height: 100%; background: #000; overflow: hidden; }
     #display { width: 100vw; height: calc(100dvh - 45px); position: absolute; top: 45px; left: 0; z-index: 1; }
     #emu-watermark { position: fixed; top: 4px; left: 12px; z-index: 9999999; max-width: 150px; max-height: 36px; object-fit: contain; }
@@ -62,27 +134,36 @@
 </head>
 <body>
 
-  <!-- IMPORTAMOS LA LISTA DE JUEGOS -->
   <script src="./games.js"></script>
 
-  <!-- ==================== VISTA 1: HUB / COLECCIÓN ==================== -->
+  <!-- ==================== VISTA 1: LISTAS VERTICALES ==================== -->
   <div id="hub-view" class="view-container">
-    <img src="./logo.png" alt="RetroC Logo" class="brand-logo">
-    <h2 class="hub-title">Tu Colección</h2>
-    <div class="grid" id="cartridge-grid">
-      <!-- Se llena por JavaScript -->
+    <img src="./logo.png" alt="Logo" class="brand-logo">
+    
+    <div style="max-width: 500px; margin: 0 auto;">
+      <!-- LISTA 1: DESBLOQUEADOS -->
+      <div class="section-title title-unlocked">
+        <span>🎮</span> Disponibles para jugar (<span id="count-unlocked">0</span>)
+      </div>
+      <div class="games-list" id="unlocked-list"></div>
+
+      <!-- LISTA 2: BLOQUEADOS -->
+      <div class="section-title title-locked">
+        <span>🔒</span> Bloqueados (<span id="count-locked">0</span>)
+      </div>
+      <div class="games-list" id="locked-list"></div>
     </div>
   </div>
 
-  <!-- ==================== VISTA 2: INFO DEL JUEGO ==================== -->
+  <!-- ==================== VISTA 2: INFO ==================== -->
   <div id="info-view" class="view-container">
-    <img src="./logo.png" alt="RetroC Logo" class="brand-logo" style="max-width: 120px; margin: 10px auto 20px;">
+    <img src="./logo.png" alt="Logo" class="brand-logo" style="max-width: 130px; margin: 10px auto 16px;">
     <img id="info-cover" src="" alt="Cover">
     <h1 id="info-title">Título</h1>
     <p id="info-desc">Descripción...</p>
     
-    <button class="btn btn-play" onclick="startGame()">🕹️ Iniciar Juego</button>
-    <button class="btn btn-home" onclick="goHome()">🏠 Volver a la Colección</button>
+    <button class="btn btn-play" onclick="startGame()">🕹️ Jugar Ahora</button>
+    <button class="btn btn-home" onclick="goHome()">🏠 Volver al Menú</button>
   </div>
 
   <!-- ==================== VISTA 3: EMULADOR ==================== -->
@@ -101,70 +182,90 @@
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
 
-    // LECTURA DE LA URL
     const params = new URLSearchParams(window.location.search);
     const gameId = params.get("game");
     const isPlaying = params.get("play") === "true";
 
-    // SISTEMA DE DESBLOQUEO (Memoria Local)
     let unlockedGames = JSON.parse(localStorage.getItem('retroc_unlocked') || '[]');
 
-    // Si entramos con un ID por escanear el NFC, lo desbloqueamos para siempre
+    // Si entra con un ID válido por NFC, lo desbloquea de inmediato
     if (gameId && GAMES[gameId] && !unlockedGames.includes(gameId)) {
       unlockedGames.push(gameId);
       localStorage.setItem('retroc_unlocked', JSON.stringify(unlockedGames));
     }
 
-    // LÓGICA DE NAVEGACIÓN DE VISTAS
+    // CONTROL DE VISTAS
     if (!gameId) {
-      // 1. NO HAY JUEGO -> MOSTRAR COLECCIÓN
       document.getElementById('hub-view').classList.add('active-view');
       renderHub();
-    } 
-    else if (gameId && !isPlaying) {
-      // 2. HAY JUEGO PERO NO 'PLAY' -> MOSTRAR INFO
+    } else if (gameId && !isPlaying) {
       document.getElementById('info-view').classList.add('active-view');
       renderInfo();
-    } 
-    else if (gameId && isPlaying) {
-      // 3. ESTÁ EN MODO JUEGO -> INICIAR EMULADOR
+    } else if (gameId && isPlaying) {
       document.getElementById('emulator-view').classList.add('active-view');
       initEmulator();
     }
 
-    // --- FUNCIONES DE LA VISTA HUB ---
+    // --- RENDERIZAR LAS DOS LISTAS VERTICALES ---
     function renderHub() {
-      const grid = document.getElementById('cartridge-grid');
-      grid.innerHTML = '';
+      const unlockedContainer = document.getElementById('unlocked-list');
+      const lockedContainer = document.getElementById('locked-list');
+      
+      unlockedContainer.innerHTML = '';
+      lockedContainer.innerHTML = '';
+
+      let uCount = 0;
+      let lCount = 0;
 
       Object.keys(GAMES).forEach(key => {
         const game = GAMES[key];
         const isUnlocked = unlockedGames.includes(key);
-        
-        const card = document.createElement('div');
-        card.className = `cartridge ${isUnlocked ? 'unlocked' : 'locked'}`;
-        card.onclick = () => {
-          if (isUnlocked) {
-            window.location.href = `?game=${key}`;
-          } else {
-            showToast("🔒 Escanea el cartucho físico NFC para desbloquear este juego", 3000);
-          }
-        };
 
-        card.innerHTML = `
-          <img class="cart-bg" src="${game.icon}" alt="${game.title}">
-          ${!isUnlocked ? '<div class="lock-icon">🔒</div>' : ''}
-          ${isUnlocked ? `<div class="cart-title-overlay">${game.title}</div>` : ''}
-        `;
-        grid.appendChild(card);
+        const card = document.createElement('div');
+
+        if (isUnlocked) {
+          uCount++;
+          card.className = 'game-card';
+          card.onclick = () => window.location.href = `?game=${key}`;
+          card.innerHTML = `
+            <img class="card-thumb" src="${game.icon}" alt="${game.title}">
+            <div class="card-details">
+              <span class="card-name">${game.title}</span>
+              <span class="card-subtext">Toca para abrir detalles</span>
+            </div>
+            <span style="color:#4ade80; font-size:1.2rem;">▶</span>
+          `;
+          unlockedContainer.appendChild(card);
+        } else {
+          lCount++;
+          card.className = 'game-card card-locked';
+          card.onclick = () => showToast("🔒 Escanea el cartucho NFC físico para desbloquear", 3000);
+          card.innerHTML = `
+            <img class="card-thumb" src="${game.icon}" alt="${game.title}">
+            <div class="card-details">
+              <span class="card-name">${game.title}</span>
+              <span class="card-subtext">Bloqueado • Requiere tarjeta NFC</span>
+            </div>
+            <span style="color:#52525b; font-size:1.1rem;">🔒</span>
+          `;
+          lockedContainer.appendChild(card);
+        }
       });
+
+      document.getElementById('count-unlocked').innerText = uCount;
+      document.getElementById('count-locked').innerText = lCount;
+
+      if (uCount === 0) {
+        unlockedContainer.innerHTML = '<div class="empty-message">No tienes cartuchos desbloqueados aún. ¡Acerca uno con NFC!</div>';
+      }
+      if (lCount === 0) {
+        lockedContainer.innerHTML = '<div class="empty-message">¡Felicidades! Tienes todos los cartuchos desbloqueados.</div>';
+      }
     }
 
-    // --- FUNCIONES DE LA VISTA INFO ---
     function renderInfo() {
       const game = GAMES[gameId];
       if(!game) { goHome(); return; }
-      
       document.getElementById('info-cover').src = game.icon;
       document.getElementById('info-title').innerText = game.title;
       document.getElementById('info-desc').innerText = game.desc;
@@ -173,19 +274,18 @@
     function startGame() { window.location.href = `?game=${gameId}&play=true`; }
     function goHome() { window.location.href = `./`; }
 
-    // --- NOTIFICACIONES GLOBALES ---
     function showToast(text, duration) {
       let t = document.createElement('div');
       t.innerText = text;
-      t.style.cssText = "position:fixed; top:80px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:#fff; padding:12px 24px; border-radius:30px; z-index:9999999; font-weight:bold; font-size:14px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); transition: opacity 0.3s; width: 80%; max-width: 350px;";
+      t.style.cssText = "position:fixed; top:70px; left:50%; transform:translateX(-50%); background:rgba(15,15,18,0.95); color:#fff; padding:12px 20px; border-radius:24px; z-index:9999999; font-weight:bold; font-size:13.5px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15); transition:opacity 0.3s; width:85%; max-width:350px;";
       document.body.appendChild(t);
       setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, duration);
     }
 
-    // --- INICIALIZACIÓN DEL EMULADOR ---
+    // --- INICIALIZACIÓN DEL EMULADOR Y CONTROLES ---
     function initEmulator() {
       const selected = GAMES[gameId];
-      if (!selected) { document.getElementById("msg").innerHTML = "Error cargando ROM"; return; }
+      if (!selected) { document.getElementById("msg").innerHTML = "Error al cargar"; return; }
 
       window.EJS_player = '#display';
       window.EJS_core = selected.system;
@@ -242,7 +342,7 @@
       initDB();
     }
 
-    // --- SISTEMA DE GUARDADO ---
+    // --- GUARDADO / CARGA LOCAL ---
     let savesDB;
     function initDB() {
       const dbReq = indexedDB.open("RetroC_SavesDB", 1);
