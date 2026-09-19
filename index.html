@@ -20,6 +20,27 @@
     .active-view { display: block; }
     .brand-logo { display: block; margin: 16px auto; max-width: 180px; }
 
+    /* BOTÓN INSTALAR PWA */
+    .btn-install {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 25px;
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 10px auto 20px auto;
+      max-width: 320px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+    }
+    .btn-install:active { transform: scale(0.98); }
+
     /* --- VISTA HUB (DOS LISTAS VERTICALES) --- */
     #hub-view { padding: 15px; }
     .section-title {
@@ -43,7 +64,7 @@
       margin: 0 auto;
     }
 
-    /* TARJETAS VERTICALES DE CADA JUEGO */
+    /* TARJETAS DE CADA JUEGO */
     .game-card {
       display: flex;
       align-items: center;
@@ -140,6 +161,11 @@
   <div id="hub-view" class="view-container">
     <img src="./logo.png" alt="Logo" class="brand-logo">
     
+    <!-- BOTÓN DE INSTALACIÓN -->
+    <button id="pwa-install-btn" class="btn-install" onclick="triggerPwaInstall()">
+      📲 Instalar Aplicación
+    </button>
+
     <div style="max-width: 500px; margin: 0 auto;">
       <!-- LISTA 1: DESBLOQUEADOS -->
       <div class="section-title title-unlocked">
@@ -186,15 +212,46 @@
     const gameId = params.get("game");
     const isPlaying = params.get("play") === "true";
 
+    // --- CAPTURA DEL EVENTO PARA INSTALACIÓN PWA ---
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('pwa-install-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBtn && !gameId) {
+        installBtn.style.display = 'flex';
+      }
+    });
+
+    async function triggerPwaInstall() {
+      if (!deferredPrompt) {
+        showToast("ℹ️ Usa el menú de tu navegador (⋮) y selecciona 'Instalar'", 3500);
+        return;
+      }
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        if (installBtn) installBtn.style.display = 'none';
+      }
+      deferredPrompt = null;
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if (installBtn) installBtn.style.display = 'none';
+      deferredPrompt = null;
+      showToast("✅ ¡Mini Retro Cartuchos instalada con éxito!", 3000);
+    });
+
+    // SISTEMA DE DESBLOQUEO LOCAL
     let unlockedGames = JSON.parse(localStorage.getItem('retroc_unlocked') || '[]');
 
-    // Si entra con un ID válido por NFC, lo desbloquea de inmediato
     if (gameId && GAMES[gameId] && !unlockedGames.includes(gameId)) {
       unlockedGames.push(gameId);
       localStorage.setItem('retroc_unlocked', JSON.stringify(unlockedGames));
     }
 
-    // CONTROL DE VISTAS
+    // NAVEGACIÓN ENTRE VISTAS
     if (!gameId) {
       document.getElementById('hub-view').classList.add('active-view');
       renderHub();
@@ -206,7 +263,7 @@
       initEmulator();
     }
 
-    // --- RENDERIZAR LAS DOS LISTAS VERTICALES ---
+    // RENDERIZADO DEL MENÚ (Ignora juegos con hidden: true)
     function renderHub() {
       const unlockedContainer = document.getElementById('unlocked-list');
       const lockedContainer = document.getElementById('locked-list');
@@ -219,9 +276,9 @@
 
       Object.keys(GAMES).forEach(key => {
         const game = GAMES[key];
-        if (game.hidden) return; // Si es secreto, no lo muestra en las listas
-        const isUnlocked = unlockedGames.includes(key);
+        if (game.hidden) return; // Omite juegos secretos como DOOM
 
+        const isUnlocked = unlockedGames.includes(key);
         const card = document.createElement('div');
 
         if (isUnlocked) {
@@ -232,7 +289,7 @@
             <img class="card-thumb" src="${game.icon}" alt="${game.title}">
             <div class="card-details">
               <span class="card-name">${game.title}</span>
-              <span class="card-subtext">Toca para abrir detalles</span>
+              <span class="card-subtext">Toca para ver detalles</span>
             </div>
             <span style="color:#4ade80; font-size:1.2rem;">▶</span>
           `;
@@ -283,7 +340,7 @@
       setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, duration);
     }
 
-    // --- INICIALIZACIÓN DEL EMULADOR Y CONTROLES ---
+    // INICIALIZACIÓN DEL EMULADOR
     function initEmulator() {
       const selected = GAMES[gameId];
       if (!selected) { document.getElementById("msg").innerHTML = "Error al cargar"; return; }
@@ -343,7 +400,7 @@
       initDB();
     }
 
-    // --- GUARDADO / CARGA LOCAL ---
+    // GUARDADO Y CARGA LOCAL (IndexedDB)
     let savesDB;
     function initDB() {
       const dbReq = indexedDB.open("RetroC_SavesDB", 1);
