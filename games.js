@@ -1,11 +1,4 @@
 const GAMES = {
-  "doom": { 
-    title: "DOOM", 
-    rom: "./roms/doom.sfc", 
-    system: "snes", 
-    icon: "./icons/doom.png",
-    desc: "El clásico shooter que definió el género. Enfréntate a las hordas demoníacas en las instalaciones de Marte en esta brutal e icónica aventura."
-  },
   "mk2":  { 
     title: "Mortal Kombat II", 
     rom: "./roms/mk2.sfc", 
