@@ -3,5 +3,5 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Este evento vacío es obligatorio para que Android habilite el botón "Instalar"
+  // Obligatorio para PWA
 });
