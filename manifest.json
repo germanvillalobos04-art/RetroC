@@ -1,6 +1,6 @@
 {
-  "name": "RetroC Arcade",
-  "short_name": "RetroC",
+  "name": "Mini Retro Cartuchos",
+  "short_name": "MiniRetroC",
   "start_url": "./",
   "display": "fullscreen",
   "background_color": "#000000",
