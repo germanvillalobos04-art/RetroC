@@ -4,192 +4,189 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>RetroC Arcade</title>
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#000000">
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
-      width: 100vw;
-      height: 100dvh;
-      background: #000;
-      overflow: hidden;
+      width: 100vw; height: 100dvh; background: #0b0b0b;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden; color: #fff;
     }
     
-    #display {
-      width: 100vw;
-      height: calc(100dvh - 45px); 
-      position: absolute;
-      top: 45px; 
-      left: 0;
-      z-index: 1;
+    /* ESTILOS COMUNES */
+    .view-container { display: none; width: 100%; height: 100%; overflow-y: auto; padding-bottom: 30px; }
+    .active-view { display: block; }
+    .brand-logo { display: block; margin: 20px auto; max-width: 200px; }
+
+    /* 1. VISTA HUB (COLECCIÓN) */
+    #hub-view { padding: 20px; text-align: center; }
+    .hub-title { font-size: 1.5rem; margin-bottom: 20px; color: #e5e5e5; text-transform: uppercase; letter-spacing: 2px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 500px; margin: 0 auto; }
+    .cartridge {
+      position: relative; aspect-ratio: 1; border-radius: 12px; background: #222;
+      border: 2px solid #333; overflow: hidden; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.2s;
     }
+    .cartridge:active { transform: scale(0.95); }
+    .cart-bg { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+    .locked .cart-bg { filter: grayscale(100%) blur(2px) brightness(0.3); opacity: 0.4; }
+    .lock-icon { font-size: 2.5rem; z-index: 2; color: #666; }
+    .cart-title-overlay {
+      position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.8);
+      padding: 6px; font-size: 0.8rem; font-weight: bold; z-index: 2;
+    }
+
+    /* 2. VISTA INFO (DESCRIPCIÓN) */
+    #info-view { padding: 30px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    #info-cover { width: 180px; height: 180px; object-fit: cover; border-radius: 16px; border: 3px solid #555; box-shadow: 0 8px 16px rgba(0,0,0,0.8); margin-bottom: 20px; }
+    #info-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 15px; color: #fff; }
+    #info-desc { font-size: 1rem; color: #bbb; line-height: 1.5; margin-bottom: 30px; max-width: 400px; }
     
-    #msg {
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100dvh;
-      font-size: 1.1rem;
-      text-align: center;
-      padding: 20px;
+    .btn {
+      padding: 14px 24px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; border: none;
+      cursor: pointer; width: 100%; max-width: 300px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
+    .btn-play { background: linear-gradient(135deg, #e63946, #9e1c11); color: #fff; box-shadow: 0 4px 12px rgba(230,57,70,0.4); }
+    .btn-home { background: #333; color: #fff; border: 1px solid #555; }
 
-    #watermark {
-      position: fixed;
-      top: 4px; 
-      left: 12px;
-      z-index: 9999999;
-      opacity: 1.0; 
-      max-width: 150px;  
-      max-height: 36px;  
-      object-fit: contain;
-      pointer-events: none; 
-      user-select: none;
-    }
-
-    #top-controls {
-      position: fixed;
-      top: 8px; 
-      right: 12px; 
-      z-index: 9999999;
-      display: flex;
-      gap: 6px;
-    }
-
-    #top-controls button {
-      background: rgba(20, 20, 20, 0.85);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    }
-
-    #top-controls button:active {
-      background: rgba(100, 100, 100, 0.85);
-    }
+    /* 3. VISTA EMULADOR */
+    #emulator-view { position: relative; width: 100%; height: 100%; background: #000; overflow: hidden; }
+    #display { width: 100vw; height: calc(100dvh - 45px); position: absolute; top: 45px; left: 0; z-index: 1; }
+    #emu-watermark { position: fixed; top: 4px; left: 12px; z-index: 9999999; max-width: 150px; max-height: 36px; object-fit: contain; }
+    #top-controls { position: fixed; top: 8px; right: 12px; z-index: 9999999; display: flex; gap: 6px; }
+    #top-controls button { background: rgba(20,20,20,0.85); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 6px 12px; font-size: 13px; font-weight: bold; cursor: pointer; }
+    #msg { color: #fff; height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.1rem; }
   </style>
 </head>
 <body>
-  <img id="watermark" src="./logo.png" alt="Logo">
-  
-  <div id="top-controls">
-    <button onclick="quickSave()">💾 Guardar</button>
-    <button onclick="quickLoad()">📂 Cargar</button>
-    <button onclick="toggleFullScreen()" id="fs-btn">⛶ Pantalla</button>
-  </div>
 
-  <div id="msg">Iniciando cartucho...</div>
-  <div id="display"></div>
-
-  <!-- CATÁLOGO DE JUEGOS -->
+  <!-- IMPORTAMOS LA LISTA DE JUEGOS -->
   <script src="./games.js"></script>
 
+  <!-- ==================== VISTA 1: HUB / COLECCIÓN ==================== -->
+  <div id="hub-view" class="view-container">
+    <img src="./logo.png" alt="RetroC Logo" class="brand-logo">
+    <h2 class="hub-title">Tu Colección</h2>
+    <div class="grid" id="cartridge-grid">
+      <!-- Se llena por JavaScript -->
+    </div>
+  </div>
+
+  <!-- ==================== VISTA 2: INFO DEL JUEGO ==================== -->
+  <div id="info-view" class="view-container">
+    <img src="./logo.png" alt="RetroC Logo" class="brand-logo" style="max-width: 120px; margin: 10px auto 20px;">
+    <img id="info-cover" src="" alt="Cover">
+    <h1 id="info-title">Título</h1>
+    <p id="info-desc">Descripción...</p>
+    
+    <button class="btn btn-play" onclick="startGame()">🕹️ Iniciar Juego</button>
+    <button class="btn btn-home" onclick="goHome()">🏠 Volver a la Colección</button>
+  </div>
+
+  <!-- ==================== VISTA 3: EMULADOR ==================== -->
+  <div id="emulator-view" class="view-container">
+    <img id="emu-watermark" src="./logo.png" alt="Logo">
+    <div id="top-controls">
+      <button onclick="goHome()" style="background:#e63946;">✕ Salir</button>
+      <button onclick="quickSave()">💾 Guardar</button>
+      <button onclick="quickLoad()">📂 Cargar</button>
+      <button onclick="toggleFullScreen()" id="fs-btn">⛶ Pantalla</button>
+    </div>
+    <div id="msg">Iniciando cartucho...</div>
+    <div id="display"></div>
+  </div>
+
   <script>
-    // 1. OBTENEMOS QUÉ JUEGO ES
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+
+    // LECTURA DE LA URL
     const params = new URLSearchParams(window.location.search);
-    const id = params.get("game") || "doom";
-    
-    // Obtenemos los datos del juego (si no existe, usamos algo genérico)
-    const selectedGame = (typeof GAMES !== 'undefined' && GAMES[id]) ? GAMES[id] : { title: "RetroC Game", icon: "./icon.png" };
+    const gameId = params.get("game");
+    const isPlaying = params.get("play") === "true";
 
-    // 2. GENERADOR DE MANIFIESTO DINÁMICO (Para que la app se instale con el nombre del juego)
-    const manifestJSON = {
-      "name": selectedGame.title,
-      "short_name": selectedGame.title,
-      "start_url": "./?game=" + id, // Fuerza a que la app abra este juego específico
-      "display": "fullscreen",
-      "background_color": "#000000",
-      "theme_color": "#000000",
-      "orientation": "landscape",
-      "icons": [
-        {
-          "src": selectedGame.icon || "./icon.png",
-          "sizes": "512x512",
-          "type": "image/png",
-          "purpose": "any maskable"
-        }
-      ]
-    };
+    // SISTEMA DE DESBLOQUEO (Memoria Local)
+    let unlockedGames = JSON.parse(localStorage.getItem('retroc_unlocked') || '[]');
 
-    // Convertimos el JSON en un archivo virtual y lo insertamos en el HTML
-    const stringManifest = JSON.stringify(manifestJSON);
-    const blob = new Blob([stringManifest], {type: 'application/json'});
-    const manifestURL = URL.createObjectURL(blob);
-    
-    const manifestLink = document.createElement('link');
-    manifestLink.rel = 'manifest';
-    manifestLink.href = manifestURL;
-    document.head.appendChild(manifestLink);
-
-    // REGISTRO DEL SERVICE WORKER (Para permitir la instalación)
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
+    // Si entramos con un ID por escanear el NFC, lo desbloqueamos para siempre
+    if (gameId && GAMES[gameId] && !unlockedGames.includes(gameId)) {
+      unlockedGames.push(gameId);
+      localStorage.setItem('retroc_unlocked', JSON.stringify(unlockedGames));
     }
 
-    // --- BASE DE DATOS LOCAL PARA GUARDAR PARTIDAS ---
-    let savesDB;
-    const dbRequest = indexedDB.open("RetroC_SavesDB", 1);
-    dbRequest.onupgradeneeded = function(e) {
-      savesDB = e.target.result;
-      if (!savesDB.objectStoreNames.contains("states")) {
-        savesDB.createObjectStore("states");
-      }
-    };
-    dbRequest.onsuccess = function(e) {
-      savesDB = e.target.result;
-    };
+    // LÓGICA DE NAVEGACIÓN DE VISTAS
+    if (!gameId) {
+      // 1. NO HAY JUEGO -> MOSTRAR COLECCIÓN
+      document.getElementById('hub-view').classList.add('active-view');
+      renderHub();
+    } 
+    else if (gameId && !isPlaying) {
+      // 2. HAY JUEGO PERO NO 'PLAY' -> MOSTRAR INFO
+      document.getElementById('info-view').classList.add('active-view');
+      renderInfo();
+    } 
+    else if (gameId && isPlaying) {
+      // 3. ESTÁ EN MODO JUEGO -> INICIAR EMULADOR
+      document.getElementById('emulator-view').classList.add('active-view');
+      initEmulator();
+    }
 
-    async function quickSave() {
-      if (window.EJS_emulator && window.EJS_emulator.gameManager) {
-        try {
-          const state = await window.EJS_emulator.gameManager.getState();
-          if (state && savesDB) {
-            const tx = savesDB.transaction("states", "readwrite");
-            tx.objectStore("states").put(state, id);
-            showToast("💾 Partida Guardada", 2000);
-            if (navigator.vibrate) navigator.vibrate(30);
+    // --- FUNCIONES DE LA VISTA HUB ---
+    function renderHub() {
+      const grid = document.getElementById('cartridge-grid');
+      grid.innerHTML = '';
+
+      Object.keys(GAMES).forEach(key => {
+        const game = GAMES[key];
+        const isUnlocked = unlockedGames.includes(key);
+        
+        const card = document.createElement('div');
+        card.className = `cartridge ${isUnlocked ? 'unlocked' : 'locked'}`;
+        card.onclick = () => {
+          if (isUnlocked) {
+            window.location.href = `?game=${key}`;
+          } else {
+            showToast("🔒 Escanea el cartucho físico NFC para desbloquear este juego", 3000);
           }
-        } catch (e) { console.error(e); showToast("❌ Error al guardar", 2000); }
-      } else { showToast("⏳ Espera a que cargue el juego", 2000); }
+        };
+
+        card.innerHTML = `
+          <img class="cart-bg" src="${game.icon}" alt="${game.title}">
+          ${!isUnlocked ? '<div class="lock-icon">🔒</div>' : ''}
+          ${isUnlocked ? `<div class="cart-title-overlay">${game.title}</div>` : ''}
+        `;
+        grid.appendChild(card);
+      });
     }
 
-    async function quickLoad() {
-      if (window.EJS_emulator && window.EJS_emulator.gameManager && savesDB) {
-        try {
-          const tx = savesDB.transaction("states", "readonly");
-          const req = tx.objectStore("states").get(id);
-          req.onsuccess = async function(e) {
-            const state = e.target.result;
-            if (state) {
-              await window.EJS_emulator.gameManager.loadState(state);
-              showToast("📂 Partida Cargada", 2000);
-              if (navigator.vibrate) navigator.vibrate(30);
-            } else { showToast("❌ No hay partida guardada", 2000); }
-          };
-        } catch (e) { console.error(e); showToast("❌ Error al cargar", 2000); }
-      } else { showToast("⏳ Espera a que cargue el juego", 2000); }
+    // --- FUNCIONES DE LA VISTA INFO ---
+    function renderInfo() {
+      const game = GAMES[gameId];
+      if(!game) { goHome(); return; }
+      
+      document.getElementById('info-cover').src = game.icon;
+      document.getElementById('info-title').innerText = game.title;
+      document.getElementById('info-desc').innerText = game.desc;
     }
 
+    function startGame() { window.location.href = `?game=${gameId}&play=true`; }
+    function goHome() { window.location.href = `./`; }
+
+    // --- NOTIFICACIONES GLOBALES ---
     function showToast(text, duration) {
       let t = document.createElement('div');
       t.innerText = text;
-      t.style.cssText = "position:fixed; top:60px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:#fff; padding:10px 22px; border-radius:20px; z-index:9999999; font-weight:bold; font-size:14px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); transition: opacity 0.3s;";
+      t.style.cssText = "position:fixed; top:80px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:#fff; padding:12px 24px; border-radius:30px; z-index:9999999; font-weight:bold; font-size:14px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); transition: opacity 0.3s; width: 80%; max-width: 350px;";
       document.body.appendChild(t);
-      setTimeout(() => {
-        t.style.opacity = '0';
-        setTimeout(() => t.remove(), 300);
-      }, duration);
+      setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, duration);
     }
 
-    // --- CARGA DEL JUEGO ---
-    if (typeof GAMES !== 'undefined' && GAMES[id]) {
-      const selected = GAMES[id];
+    // --- INICIALIZACIÓN DEL EMULADOR ---
+    function initEmulator() {
+      const selected = GAMES[gameId];
+      if (!selected) { document.getElementById("msg").innerHTML = "Error cargando ROM"; return; }
+
       window.EJS_player = '#display';
       window.EJS_core = selected.system;
       window.EJS_gameUrl = selected.rom;
@@ -202,9 +199,7 @@
         while (target && target !== document.body) {
           const cls = (target.className || '').toString().toLowerCase();
           const elemId = (target.id || '').toString().toLowerCase();
-          if (cls.includes('button') || cls.includes('dpad') || cls.includes('direction') || 
-              cls.includes('up') || cls.includes('down') || cls.includes('left') || cls.includes('right') ||
-              elemId.includes('button') || elemId.includes('dpad')) {
+          if (cls.includes('button') || cls.includes('dpad') || cls.includes('direction') || cls.includes('up') || cls.includes('down') || cls.includes('left') || cls.includes('right') || elemId.includes('button') || elemId.includes('dpad')) {
             if (navigator.vibrate) navigator.vibrate(15);
             break;
           }
@@ -217,64 +212,73 @@
         el.style.setProperty('border', border, 'important');
         el.style.setProperty('color', textColor, 'important');
         el.style.setProperty('text-shadow', '0 1px 2px rgba(0,0,0,0.8)', 'important');
-        const innerTextEls = el.querySelectorAll('*');
-        innerTextEls.forEach(child => {
-          child.style.setProperty('color', textColor, 'important');
-          child.style.setProperty('fill', textColor, 'important');
-        });
+        el.querySelectorAll('*').forEach(child => { child.style.setProperty('color', textColor, 'important'); child.style.setProperty('fill', textColor, 'important'); });
       }
 
       const observer = new MutationObserver(() => {
-        const elements = document.querySelectorAll('div, button, span');
-        elements.forEach(el => {
+        document.querySelectorAll('div, button, span').forEach(el => {
           const cls = (el.className || '').toString().toLowerCase();
           const elemId = (el.id || '').toString().toLowerCase();
           const txt = (el.innerText || el.textContent || '').trim().toUpperCase();
-
           const isDpad = cls.includes('dpad') || elemId.includes('dpad') || cls.includes('direction') || cls.includes('joystick') || cls.includes('up') || cls.includes('down') || cls.includes('left') || cls.includes('right');
 
-          if (cls.includes('button-a') || elemId.includes('button-a') || txt === 'A') {
-            styleBtn(el, 'rgba(230, 57, 70, 0.88)', '2px solid #9e1c11', '#ffffff');
-          } else if (cls.includes('button-b') || elemId.includes('button-b') || txt === 'B') {
-            styleBtn(el, 'rgba(255, 183, 3, 0.88)', '2px solid #b28300', '#ffffff');
-          } else if (cls.includes('button-x') || elemId.includes('button-x') || txt === 'X') {
-            styleBtn(el, 'rgba(29, 112, 184, 0.88)', '2px solid #144b7d', '#ffffff');
-          } else if (cls.includes('button-y') || elemId.includes('button-y') || txt === 'Y') {
-            styleBtn(el, 'rgba(42, 157, 143, 0.88)', '2px solid #1c6b60', '#ffffff');
-          } else if (!isDpad && (cls.includes('button-l') || txt === 'L' || txt === 'L1' || cls.includes('button-r') || txt === 'R' || txt === 'R1')) {
-            styleBtn(el, 'rgba(153, 153, 161, 0.85)', '2px solid #777780', '#ffffff');
-          }
+          if (cls.includes('button-a') || elemId.includes('button-a') || txt === 'A') styleBtn(el, 'rgba(230, 57, 70, 0.88)', '2px solid #9e1c11', '#ffffff');
+          else if (cls.includes('button-b') || elemId.includes('button-b') || txt === 'B') styleBtn(el, 'rgba(255, 183, 3, 0.88)', '2px solid #b28300', '#ffffff');
+          else if (cls.includes('button-x') || elemId.includes('button-x') || txt === 'X') styleBtn(el, 'rgba(29, 112, 184, 0.88)', '2px solid #144b7d', '#ffffff');
+          else if (cls.includes('button-y') || elemId.includes('button-y') || txt === 'Y') styleBtn(el, 'rgba(42, 157, 143, 0.88)', '2px solid #1c6b60', '#ffffff');
+          else if (!isDpad && (cls.includes('button-l') || txt === 'L' || txt === 'L1' || cls.includes('button-r') || txt === 'R' || txt === 'R1')) styleBtn(el, 'rgba(153, 153, 161, 0.85)', '2px solid #777780', '#ffffff');
         });
       });
-
       observer.observe(document.body, { childList: true, subtree: true });
 
       const s = document.createElement('script');
       s.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-      
       s.onload = () => { 
         document.getElementById('msg').style.display = 'none'; 
         showToast("👆 Toca '⛶ Pantalla' arriba a la derecha para iniciar", 5000);
       };
-      
       document.body.appendChild(s);
-    } else {
-      document.getElementById("msg").innerHTML = `
-        <h3 style="color:#ff6b6b; margin-bottom: 8px;">Cartucho no encontrado</h3>
-        <p style="color:#aaa; font-size: 14px;">Revisa que el código en el chip NFC sea correcto, o verifica que games.js se haya cargado.</p>
-      `;
+      
+      initDB();
+    }
+
+    // --- SISTEMA DE GUARDADO ---
+    let savesDB;
+    function initDB() {
+      const dbReq = indexedDB.open("RetroC_SavesDB", 1);
+      dbReq.onupgradeneeded = e => { if (!e.target.result.objectStoreNames.contains("states")) e.target.result.createObjectStore("states"); };
+      dbReq.onsuccess = e => { savesDB = e.target.result; };
+    }
+
+    async function quickSave() {
+      if (window.EJS_emulator && window.EJS_emulator.gameManager && savesDB) {
+        try {
+          const state = await window.EJS_emulator.gameManager.getState();
+          savesDB.transaction("states", "readwrite").objectStore("states").put(state, gameId);
+          showToast("💾 Partida Guardada", 2000);
+          if (navigator.vibrate) navigator.vibrate(30);
+        } catch (e) { showToast("❌ Error al guardar", 2000); }
+      }
+    }
+
+    async function quickLoad() {
+      if (window.EJS_emulator && window.EJS_emulator.gameManager && savesDB) {
+        try {
+          savesDB.transaction("states", "readonly").objectStore("states").get(gameId).onsuccess = async e => {
+            if (e.target.result) { await window.EJS_emulator.gameManager.loadState(e.target.result); showToast("📂 Partida Cargada", 2000); if (navigator.vibrate) navigator.vibrate(30); }
+            else showToast("❌ No hay partida guardada", 2000);
+          };
+        } catch (e) { showToast("❌ Error al cargar", 2000); }
+      }
     }
 
     function toggleFullScreen() {
-      const elem = document.documentElement;
-      const btn = document.getElementById('fs-btn');
+      const elem = document.documentElement; const btn = document.getElementById('fs-btn');
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        if (elem.requestFullscreen) { elem.requestFullscreen(); } 
-        else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-        btn.innerText = '✕ Salir';
+        if (elem.requestFullscreen) elem.requestFullscreen(); else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+        btn.innerText = '✕ Salir FC';
       } else {
-        if (document.exitFullscreen) { document.exitFullscreen(); } 
-        else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+        if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
         btn.innerText = '⛶ Pantalla';
       }
     }
