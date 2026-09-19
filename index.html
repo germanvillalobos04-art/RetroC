@@ -30,7 +30,7 @@
       font-size: 0.95rem;
       font-weight: bold;
       cursor: pointer;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
@@ -212,9 +212,14 @@
     const gameId = params.get("game");
     const isPlaying = params.get("play") === "true";
 
-    // --- CAPTURA DEL EVENTO PARA INSTALACIÓN PWA ---
+    // --- CONTROL DEL BOTÓN DE INSTALACIÓN PROPIO ---
     let deferredPrompt = null;
     const installBtn = document.getElementById('pwa-install-btn');
+
+    // Si ya se está ejecutando como app instalada (standalone), ocultar el botón
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      if (installBtn) installBtn.style.display = 'none';
+    }
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -225,16 +230,16 @@
     });
 
     async function triggerPwaInstall() {
-      if (!deferredPrompt) {
-        showToast("ℹ️ Usa el menú de tu navegador (⋮) y selecciona 'Instalar'", 3500);
-        return;
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          if (installBtn) installBtn.style.display = 'none';
+        }
+        deferredPrompt = null;
+      } else {
+        showToast("ℹ️ Toca los tres puntos (⋮) de tu navegador y selecciona 'Instalar aplicación'", 4500);
       }
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        if (installBtn) installBtn.style.display = 'none';
-      }
-      deferredPrompt = null;
     }
 
     window.addEventListener('appinstalled', () => {
