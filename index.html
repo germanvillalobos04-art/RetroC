@@ -219,6 +219,7 @@
 
       Object.keys(GAMES).forEach(key => {
         const game = GAMES[key];
+        if (game.hidden) return; // Si es secreto, no lo muestra en las listas
         const isUnlocked = unlockedGames.includes(key);
 
         const card = document.createElement('div');
