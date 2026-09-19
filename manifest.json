@@ -1,6 +1,6 @@
 {
-  "name": "Mini Retro Cartuchos",
-  "short_name": "MiniRetroC",
+  "name": "Mini Cartuchos Retro",
+  "short_name": "MiniCartuchosR",
   "start_url": "./",
   "display": "fullscreen",
   "background_color": "#000000",
