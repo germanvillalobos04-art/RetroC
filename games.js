@@ -5,7 +5,7 @@ const GAMES = {
     system: "snes", 
     icon: "./icons/doom.png",
     hidden: true,
-    desc: "El clásico shooter que definió el género. Enfréntate a las hordas demoníacas en las instalaciones de Marte en esta brutal e icónica aventura."
+    desc: "El clásico shooter que definió el género. Enfréntate a las hordas demoníacas en las instalaciones de Marte en esta brutal e icónica aventura secreta."
   },
   "mk2":  { 
     title: "Mortal Kombat II", 
