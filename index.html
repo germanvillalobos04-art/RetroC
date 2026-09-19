@@ -91,8 +91,46 @@
   <script src="./games.js"></script>
 
   <script>
+    // 1. OBTENEMOS QUÉ JUEGO ES
     const params = new URLSearchParams(window.location.search);
     const id = params.get("game") || "doom";
+    
+    // Obtenemos los datos del juego (si no existe, usamos algo genérico)
+    const selectedGame = (typeof GAMES !== 'undefined' && GAMES[id]) ? GAMES[id] : { title: "RetroC Game", icon: "./icon.png" };
+
+    // 2. GENERADOR DE MANIFIESTO DINÁMICO (Para que la app se instale con el nombre del juego)
+    const manifestJSON = {
+      "name": selectedGame.title,
+      "short_name": selectedGame.title,
+      "start_url": "./?game=" + id, // Fuerza a que la app abra este juego específico
+      "display": "fullscreen",
+      "background_color": "#000000",
+      "theme_color": "#000000",
+      "orientation": "landscape",
+      "icons": [
+        {
+          "src": selectedGame.icon || "./icon.png",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "any maskable"
+        }
+      ]
+    };
+
+    // Convertimos el JSON en un archivo virtual y lo insertamos en el HTML
+    const stringManifest = JSON.stringify(manifestJSON);
+    const blob = new Blob([stringManifest], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blob);
+    
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = manifestURL;
+    document.head.appendChild(manifestLink);
+
+    // REGISTRO DEL SERVICE WORKER (Para permitir la instalación)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
 
     // --- BASE DE DATOS LOCAL PARA GUARDAR PARTIDAS ---
     let savesDB;
@@ -138,7 +176,6 @@
       } else { showToast("⏳ Espera a que cargue el juego", 2000); }
     }
 
-    // Función de notificaciones con tiempo ajustable
     function showToast(text, duration) {
       let t = document.createElement('div');
       t.innerText = text;
@@ -160,7 +197,6 @@
       window.EJS_startOnLoaded = true;
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
 
-      // --- RESPUESTA HÁPTICA LIMPIA ---
       document.addEventListener('touchstart', function(e) {
         let target = e.target;
         while (target && target !== document.body) {
@@ -176,7 +212,6 @@
         }
       }, { passive: true });
 
-      // --- ESTILIZADO DE COLORES ---
       function styleBtn(el, bg, border, textColor = '#ffffff') {
         el.style.setProperty('background', bg, 'important');
         el.style.setProperty('border', border, 'important');
@@ -217,7 +252,6 @@
       const s = document.createElement('script');
       s.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
       
-      // Mensaje al terminar de cargar
       s.onload = () => { 
         document.getElementById('msg').style.display = 'none'; 
         showToast("👆 Toca '⛶ Pantalla' arriba a la derecha para iniciar", 5000);
@@ -247,4 +281,3 @@
   </script>
 </body>
 </html>
-2
